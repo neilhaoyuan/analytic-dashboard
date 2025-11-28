@@ -16,10 +16,16 @@ interval_map = {
     '1 Month': '1mo', '3 Months': '3mo'
 }
 
-def get_stock_data(ticker, period, interval):
+def get_close_data(ticker, period, interval):
     data_period = period_map.get(period)
     data_interval = interval_map.get(interval)
     ticker = yf.Ticker(ticker)
-    data = ticker.history(period=data_period, interval=data_interval)
-    return data["Close"]
 
+    # Main info for graphing
+    data = ticker.history(period=data_period, interval=data_interval)
+
+    # Secondary info for consistent percent changes
+    daily_data = ticker.history(period=data_period, interval="1d")
+    percent_change = (daily_data['Close'].iloc[-1] / daily_data['Close'].iloc[0] - 1) * 100
+    
+    return data, percent_change
