@@ -10,24 +10,29 @@ import data
 app = Dash()
 
 # App layout
-app.layout = [html.Div('Neil\'s Dashboard'),
-              html.Div([dcc.Dropdown(['Basic', 'Candlestick'], id='graph-type', value='Basic', multi=False),
+app.layout = html.Div([
+    html.Div("Neil's Dashboard"),
 
-                        dcc.Input(id='ticker-input', placeholder='Enter a valid ticker...',type='text',value=['AAPL', 'MSFT', 'GME', 'NVDA']),
+    html.Div([
+        dcc.Dropdown(['Basic', 'Candlestick'], id='graph-type', value='Basic', multi=False),
 
-                        dcc.Store(id='ticker-store', data=[]),
+        dcc.Input(id='ticker-input', placeholder='Enter a valid ticker...', type='text', value='AAPL'),
 
-                        html.Div(id='display-ticker-list'),
-                        
-                        dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months', '3 Months', '1 Month', '5 Days', '1 Day'],
-                                     id='period-select-dropdown', value = '1 Year', multi=False),
+        html.Div(id='display-ticker-list'),
 
-                        dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours', '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
-                                     id='interval-select-dropdown', value='1 Day', multi=False),
+        dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
+                      '3 Months', '1 Month', '5 Days', '1 Day'],
+                     id='period-select-dropdown', value='1 Year', multi=False),
 
-                        html.Div(id="percent-change-label", style={"fontSize": "20px", "fontWeight": "bold"}),
+        dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
+                      '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+                     id='interval-select-dropdown', value='1 Day', multi=False),
 
-                        dcc.Graph(id='stock-graph')])]
+        html.Div(id="percent-change-label", style={"fontSize": "20px", "fontWeight": "bold"}),
+
+        dcc.Graph(id='stock-graph')
+    ])
+])
 
 #@callback(
 #    Output('ticker-store', 'data'),
