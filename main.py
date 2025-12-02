@@ -9,6 +9,8 @@ import data
 # Initialize the app
 app = Dash()
 
+ticker_df = pd.read_csv("total_tickers.csv")
+
 # App layout
 app.layout = html.Div([
     html.Div("Neil's Dashboard"),
@@ -16,7 +18,7 @@ app.layout = html.Div([
     html.Div([
         dcc.Dropdown(['Basic', 'Candlestick'], id='graph-type', value='Basic', multi=False),
 
-        dcc.Input(id='ticker-input', placeholder='Enter a valid ticker...', type='text', value='AAPL'),
+        dcc.Dropdown(ticker_df["Symbol"], id='ticker-input', value=['AAPL'], multi=True),
 
         html.Div(id='display-ticker-list'),
 
@@ -47,24 +49,49 @@ app.layout = html.Div([
     Input('period-select-dropdown', 'value'),
     Input('interval-select-dropdown', 'value'),
     Input('graph-type', 'value'))
-def update_graph(ticker, period, interval, type):
-    df, pct_change = data.get_close_data(ticker, period, interval)
-    if pct_change >= 0:
-        color = "green"
-    else:
-        color = "red"
-    label = html.Span(f"{pct_change:.2f}%", style={"color": color})
+def update_graph(ticker_list, period, interval, type):
+    df, pct_change = data.get_close_data(ticker_list, period, interval)
 
-    if (type == 'Basic'):
-        fig = px.line(df, x=df.index, y='Close', title=f'{ticker}: {period}')
-    elif (type == 'Candlestick'):
+    # Build percent change label
+    if len(ticker_list) == 1:
+        pct = list(pct_change.values())[0]
+        color = "green" if pct >= 0 else "red"
+        label = html.Span(f"{pct:.2f}%", style={"color": color})
+    else:
+        # Multi-ticker = show all
+        label = html.Div([
+            html.Div(f"{t}: {pct_change[t]:.2f}%") for t in pct_change
+        ])
+
+    # BASIC MULTI-LINE
+    if type == "Basic":
+        fig = px.line(
+            df,
+            x=df.index,
+            y="Close",
+            color="Ticker",
+            title=", ".join(ticker_list)
+        )
+        return fig, label
+
+    # CANDLESTICK ONLY IF 1 TICKER
+    if type == "Candlestick":
+        if len(ticker_list) != 1:
+            return go.Figure(), "Candlestick only works with a single ticker."
+        
+        t = ticker_list[0]
+        df_t = df[df["Ticker"] == t]
+
         fig = go.Figure(go.Candlestick(
-            x = df.index,
-            open = df['Open'],
-            high = df['High'],
-            low = df['Low'],
-            close = df['Close']))
-    return fig, label
+            x=df_t.index,
+            open=df_t["Open"],
+            high=df_t["High"],
+            low=df_t["Low"],
+            close=df_t["Close"]
+        ))
+        return fig, label
+
+    return go.Figure(), label
 
 # Run the app
 if __name__ == '__main__':

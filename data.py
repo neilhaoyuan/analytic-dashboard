@@ -1,6 +1,6 @@
 import yfinance as yf
 import pandas as pd
-import numpy as np
+import numpy as np 
 import numpy_financial as npf
 
 period_map = {
@@ -16,16 +16,32 @@ interval_map = {
     '1 Month': '1mo', '3 Months': '3mo'
 }
 
-def get_close_data(ticker, period, interval):
-    data_period = period_map.get(period)
-    data_interval = interval_map.get(interval)
-    ticker = yf.Ticker(ticker)
-
-    # Main info for graphing
-    data = ticker.history(period=data_period, interval=data_interval)
-
-    # Secondary info for consistent percent changes
-    daily_data = ticker.history(period=data_period, interval="1d")
-    percent_change = (daily_data['Close'].iloc[-1] / daily_data['Close'].iloc[0] - 1) * 100
+def get_close_data(ticker_list, period, interval):
+    if ticker_list is None:
+        return pd.DataFrame(), {} 
     
-    return data, percent_change
+    if isinstance(ticker_list, str):
+        ticker_list = [ticker_list]
+
+    all_dfs = []
+
+    for t in ticker_list:
+        df = yf.Ticker(t).history(period=period_map[period], interval=interval_map[interval])
+
+        if df.empty:
+            continue  # skip broken tickers
+
+        df["Ticker"] = t
+        all_dfs.append(df)
+
+    # Combine vertically
+    full_df = pd.concat(all_dfs)
+
+    # Percent change per ticker
+    pct_change = (
+        full_df.groupby("Ticker")["Close"]
+               .apply(lambda s: (s.iloc[-1] - s.iloc[0]) / s.iloc[0] * 100)
+               .to_dict()
+    )
+
+    return full_df, pct_change
