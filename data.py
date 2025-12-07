@@ -2,46 +2,56 @@ import yfinance as yf
 import pandas as pd
 import numpy as np 
 import numpy_financial as npf
+from config import period_map, interval_map, valid_intervals_map
 
-period_map = {
-    '10 Years': '10y', '5 Years': '5y', '2 Years': '2y', '1 Year': '1y',
-    'Year To Date': 'ytd', '6 Months': '6mo', '3 Months': '3mo',
-    '1 Month': '1mo', '5 Days': '5d', '1 Day': '1d'
-}
-
-interval_map = {
-    '5 Minutes': '5m', '15 Minutes': '15m',
-    '30 Minutes': '30m', '1 Hour': '60m', '1.5 Hours': '90m',
-    '1 Day': '1d', '5 Days': '5d', '1 Week': '1wk',
-    '1 Month': '1mo', '3 Months': '3mo'
-}
+def get_valid_interval(period):
+    return valid_intervals_map[period]
 
 def get_close_data(ticker_list, period, interval):
-    if ticker_list is None:
-        return pd.DataFrame(), {} 
-    
-    if isinstance(ticker_list, str):
-        ticker_list = [ticker_list]
+    if not ticker_list:
+        return pd.DataFrame(), {}
 
-    all_dfs = []
+    closes = {} # Dictionary holding close prices
 
+    # Loops through list and adds close prices
     for t in ticker_list:
-        df = yf.Ticker(t).history(period=period_map[period], interval=interval_map[interval])
-
+        df = yf.Ticker(t).history(
+            period=period_map[period],
+            interval=interval_map[interval]
+        )
         if df.empty:
-            continue  # skip broken tickers
+            continue
+        closes[t] = df["Close"]
 
-        df["Ticker"] = t
-        all_dfs.append(df)
+    if not closes:
+        return pd.DataFrame(), {}
+    df = pd.DataFrame(closes)
 
-    # Combine vertically
-    full_df = pd.concat(all_dfs)
+    df = df.dropna()
+    pct_change = ((df.iloc[-1] / df.iloc[0] - 1) * 100).to_dict()
 
-    # Percent change per ticker
-    pct_change = (
-        full_df.groupby("Ticker")["Close"]
-               .apply(lambda s: (s.iloc[-1] - s.iloc[0]) / s.iloc[0] * 100)
-               .to_dict()
+    return df, pct_change
+
+# Gets data for candlestick
+def get_ohlc_data(ticker, period, interval):
+    df = yf.Ticker(ticker).history(
+        period=period_map[period],
+        interval=interval_map[interval]
     )
+    return df
 
-    return full_df, pct_change
+# Used for std, cor, etc
+def get_weekly_close(close_df):
+    close_df2 = close_df.copy()
+    close_df2["Week"] = close_df2.index.to_period("W")
+    mask = close_df2["Week"] != close_df2["Week"].shift(-1)
+    weekly_close = close_df2.loc[mask].drop(columns="Week")
+
+    return weekly_close
+
+# Correlation matrix
+def get_correlation_data(weekly_close):
+    weekly_pct = weekly_close.pct_change().dropna()
+    corr_matrix = weekly_pct.corr()
+    return corr_matrix
+
