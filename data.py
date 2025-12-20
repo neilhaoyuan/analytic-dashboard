@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np 
+import plotly.graph_objects as go
 import numpy_financial as npf
 from config import period_map, interval_map, valid_intervals_map
 
@@ -17,7 +18,7 @@ def get_ohlc_data(ticker, period, interval):
 
 def get_close_data(ticker_list, period, interval):
     if not ticker_list:
-        return pd.DataFrame(), {}
+        return pd.DataFrame()
 
     closes = {} # Dictionary holding close prices
 
@@ -28,16 +29,16 @@ def get_close_data(ticker_list, period, interval):
             closes[t] = df["Close"]
 
     if not closes:
-        return pd.DataFrame(), {}
+        return pd.DataFrame()
     
     df = pd.DataFrame(closes).dropna()
-    pct_change = (((df.iloc[-1] - df.iloc[0]) / df.iloc[0]) * 100).to_dict()
 
-    return df, pct_change
+    return df
 
 # Used for std, cor, etc
 def get_weekly_close(close_df):
     close_df2 = close_df.copy()
+    close_df2.index = pd.to_datetime(close_df2.index)
     close_df2["Week"] = close_df2.index.to_period("W")
     mask = close_df2["Week"] != close_df2["Week"].shift(-1)
     weekly_close = close_df2.loc[mask].drop(columns="Week")
@@ -107,10 +108,9 @@ def get_summary_table(ticker_list, shares_dict, period, interval):
     for ticker in ticker_list:
         ohlc_data = get_ohlc_data(ticker, period, interval)
             
+        volume = ohlc_data['Volume'].iloc[-1]
         initial_price = ohlc_data['Close'].iloc[0]
         current_price = ohlc_data['Close'].iloc[-1]
-        volume = ohlc_data['Volume'].iloc[-1]
-
         return_pct = ((current_price - initial_price) / initial_price) * 100
 
         num_shares = shares_dict.get(ticker)
@@ -136,8 +136,22 @@ def get_summary_table(ticker_list, shares_dict, period, interval):
     df = pd.DataFrame(summary_table)
     df['Current Price'] = df['Current Price'].round(2)
     df['Portfolio Value'] = df['Portfolio Value'].round(2)
-    df['% Return'] = df['Portfolio Value'].round(2)
-    df['% Portfolio Value'] = (df['Portfolio Value'] / total_value) * 100
-    df['% Portfolio Value'] = df['% Portfolio Value'].round(2)
+    df['% Return'] = df['% Return'].round(2)
+    df['% Portfolio Value'] = ((df['Portfolio Value'] / total_value) * 100).round(2)
 
     return df
+
+def create_candlestick_graph(ohlc_df, title):
+    # Empty ticker, no figure generated
+    if ohlc_df.empty:
+        return go.Figure()
+        
+    fig = go.Figure(go.Candlestick(
+        x=ohlc_df.index,
+        open=ohlc_df["Open"],
+        high=ohlc_df["High"],
+        low=ohlc_df["Low"],
+        close=ohlc_df["Close"]
+    )).update_layout(title=f"{title}")
+    
+    return fig

@@ -4,12 +4,15 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
 import data
+import pandas as pd
 from config import ticker_df
 
 dash.register_page(__name__, path='/')  
 
 # App layout
 layout = html.Div([
+    dcc.Store(id='close-data-storage'),
+
     html.Div("Portfolio Analysis"),
 
     # Controls
@@ -29,8 +32,6 @@ layout = html.Div([
         dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
                       '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
                      id='interval-select-dropdown', value='1 Day', multi=False),
-
-        html.Div(id='percent-change-label', style={"fontSize": "20px", "fontWeight": "bold"}),
     ]),
 
     # Summary table
@@ -94,29 +95,30 @@ def update_shares_table(ticker_list):
     return columns, data
 
 @callback(
-        Output('line-graph', 'figure'),
-        Output('percent-change-label', 'children'),
-        Output('candle-ticker-select', 'options'),
-        Output('candle-ticker-select', 'value'),
-        Output('volume-ticker-select', 'options'),
-        Output('volume-ticker-select', 'value'),
+        Output('close-data-storage', 'data'),
         Input('ticker-input', 'value'),
         Input('period-select-dropdown', 'value'),
         Input('interval-select-dropdown', 'value')
 )
-def update_line_graph(ticker_list, period, interval):
-    closes_df, pct_change = data.get_close_data(ticker_list, period, interval)
-
-    # Build percent change label
-    if len(ticker_list) == 1:
-        pct = pct_change[ticker_list[0]]
-        color = "green" if pct >= 0 else "red"
-        label = html.Span(f"{ticker_list[0]}: {pct:.2f}%", style={"color": color})
-    else:
-        label = html.Div([
-            html.Div(f"{t}: {pct_change[t]:.2f}%") for t in pct_change
-        ])
+def get_and_store_data(ticker_list, period, interval):
+    closes_df = data.get_close_data(ticker_list, period, interval)
+    closes_dict = closes_df.to_dict('split')
     
+    return closes_dict
+
+@callback(
+        Output('line-graph', 'figure'),
+        Output('candle-ticker-select', 'options'),
+        Output('candle-ticker-select', 'value'),
+        Output('volume-ticker-select', 'options'),
+        Output('volume-ticker-select', 'value'),
+        Input('close-data-storage', 'data'),
+        Input('ticker-input', 'value')
+)
+def update_line_graph(closes_dict, ticker_list):
+    closes_df = pd.DataFrame(closes_dict['data'], index=closes_dict['index'], columns=closes_dict['columns'])
+    closes_df.index = pd.to_datetime(closes_df.index)
+
     # Create line graph
     fig = px.line(
         closes_df,
@@ -132,7 +134,7 @@ def update_line_graph(ticker_list, period, interval):
     default_candle = ticker_list[0] if ticker_list else None
     default_volume = ticker_list[0] if ticker_list else None
     
-    return fig, label, candle_options, default_candle, volume_options, default_volume
+    return fig, candle_options, default_candle, volume_options, default_volume
 
 @callback(
     Output('candlestick-graph', 'figure'),
@@ -147,27 +149,20 @@ def update_candlestick(ticker, period, interval):
         return go.Figure()
     
     ohlc_df = data.get_ohlc_data(ticker, period, interval)
-    
-    fig = go.Figure(go.Candlestick(
-        x=ohlc_df.index,
-        open=ohlc_df["Open"],
-        high=ohlc_df["High"],
-        low=ohlc_df["Low"],
-        close=ohlc_df["Close"]
-    )).update_layout(title=f"Candlestick: {ticker}")
+    fig = data.create_candlestick_graph(ohlc_df, f"Candlestick: {ticker}")
     
     return fig
 
 @callback(
         Output('cumulative-returns-graph', 'figure'),
-        Input('ticker-input', 'value'),
-        Input('shares-table', 'data'), 
-        Input('period-select-dropdown', 'value'),
-        Input('interval-select-dropdown', 'value')
+        Input('close-data-storage', 'data'),
+        Input('shares-table', 'data')
 )
-def update_cumulative_returns(ticker_list, table_data, period, interval):
+def update_cumulative_returns(closes_dict, table_data):
+    closes_df = pd.DataFrame(closes_dict['data'], index=closes_dict['index'], columns=closes_dict['columns'])
+    closes_df.index = pd.to_datetime(closes_df.index)
+    
     shares = table_data[0]
-    closes_df, _ = data.get_close_data(ticker_list, period, interval)
     returns_df = data.get_cumulative_returns(closes_df, shares)
 
     if returns_df.empty:
@@ -200,25 +195,25 @@ def update_volume_graph(ticker, period, interval):
     if volume.empty:
         return go.Figure()
     
-    volume = data.get_volume_data(ticker, period, interval)
-
     fig = go.Figure(go.Bar(x=volume.index, y=volume)).update_layout(title=f"Trading Volume Per Day")
     
     return fig
 
 @callback(
     Output('corr-heatmap', 'figure'),
+    Input('close-data-storage', 'data'),
     Input('ticker-input', 'value'),
-    Input('period-select-dropdown', 'value'),
-    Input('interval-select-dropdown', 'value')
 )
-def update_heatmap(ticker_list, period, interval):
+def update_heatmap(closes_dict, ticker_list):
 
     # Empty or not enough tickers
     if not ticker_list or len(ticker_list) < 2:
         return go.Figure()
     
-    closes_df, _ = data.get_close_data(ticker_list, period, interval)
+    closes_df = pd.DataFrame(closes_dict['data'], index=closes_dict['index'], columns=closes_dict['columns'])
+    closes_df.index = pd.to_datetime(closes_df.index, utc=True)
+    closes_df.index = closes_df.index.tz_localize(None)
+
     weekly_close = data.get_weekly_close(closes_df)
     corr_matrix = data.get_correlation_data(weekly_close)
 
