@@ -1,5 +1,6 @@
 import dash
 from dash import html, dcc, callback, Output, Input, dash_table
+import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
 import data
@@ -16,11 +17,10 @@ layout = html.Div([
         dcc.Dropdown(ticker_df["Symbol"], id='ticker-input', value=['AAPL', 'GOOGL', 'NVDA'], multi=True),
 
         html.Div("Shares Per Stock"),
-        dash_table.DataTable(
-                id='shares-table',
-                editable=True,
-                style_cell={'textAlign': 'center'},
-                style_header={'fontWeight': 'bold'}),
+        dash_table.DataTable(id='shares-table',
+                             editable=False,
+                            style_cell={'textAlign': 'center'},
+                            style_header={'fontWeight': 'bold'}),
 
         dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
                       '3 Months', '1 Month', '5 Days', '1 Day'],
@@ -32,6 +32,11 @@ layout = html.Div([
 
         html.Div(id='percent-change-label', style={"fontSize": "20px", "fontWeight": "bold"}),
     ]),
+
+    # Summary table
+    html.Div([
+        html.Div(id='summary-table')
+        ]),
 
     # Plotting line, candle
     html.Div([
@@ -252,3 +257,24 @@ def update_sector_graph(ticker_list):
         showlegend=True)
     
     return fig
+
+@callback(
+        Output('summary-table', 'children'),
+        Input('ticker-input', 'value'),
+        Input('shares-table', 'data'),
+        Input('period-select-dropdown', 'value'),
+        Input('interval-select-dropdown', 'value')
+)
+def update_summary_table(ticker_list, table_data, period, interval):
+    
+    # No tickers selected
+    if not ticker_list:
+        return [], []
+    
+    shares = table_data[0]
+    summary_df = data.get_summary_table(ticker_list, shares, period, interval)
+
+    if summary_df.empty:
+        return html.Div()
+
+    return dbc.Table.from_dataframe(summary_df, striped=True, bordered=True, hover=True)

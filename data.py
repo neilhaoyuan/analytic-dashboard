@@ -31,7 +31,7 @@ def get_close_data(ticker_list, period, interval):
         return pd.DataFrame(), {}
     
     df = pd.DataFrame(closes).dropna()
-    pct_change = ((df.iloc[-1] / df.iloc[0] - 1) * 100).to_dict()
+    pct_change = (((df.iloc[-1] - df.iloc[0]) / df.iloc[0]) * 100).to_dict()
 
     return df, pct_change
 
@@ -94,4 +94,50 @@ def get_sector_info(ticker_list):
     
     df = pd.DataFrame(sector_data)
     
+    return df
+
+# Get summary table
+def get_summary_table(ticker_list, shares_dict, period, interval):
+    if not ticker_list or not shares_dict:
+        return pd.DataFrame()
+    
+    summary_table = []
+    total_value = 0
+
+    for ticker in ticker_list:
+        ohlc_data = get_ohlc_data(ticker, period, interval)
+            
+        initial_price = ohlc_data['Close'].iloc[0]
+        current_price = ohlc_data['Close'].iloc[-1]
+        volume = ohlc_data['Volume'].iloc[-1]
+
+        return_pct = ((current_price - initial_price) / initial_price) * 100
+
+        num_shares = shares_dict.get(ticker)
+        value = current_price * num_shares
+        total_value += value
+
+        sector = yf.Ticker(ticker).info.get('sector')
+
+        summary_table.append({
+            'Ticker': ticker,
+            '% Return': return_pct,
+            'Current Volume': volume, 
+            'Current Price': current_price,
+            'Sector': sector,
+            'Shares': num_shares,
+            'Portfolio Value': value
+        })
+
+    if not summary_table:
+        return pd.DataFrame()
+
+
+    df = pd.DataFrame(summary_table)
+    df['Current Price'] = df['Current Price'].round(2)
+    df['Portfolio Value'] = df['Portfolio Value'].round(2)
+    df['% Return'] = df['Portfolio Value'].round(2)
+    df['% Portfolio Value'] = (df['Portfolio Value'] / total_value) * 100
+    df['% Portfolio Value'] = df['% Portfolio Value'].round(2)
+
     return df

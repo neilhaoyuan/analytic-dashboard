@@ -14,16 +14,16 @@ interval_map = {
 }
 
 valid_intervals_map = {
-    "10 Years": ["1 Day", "5 Days", "1 Week", "1 Month", "3 Months"],
-    "5 Years":  ["1 Day", "5 Days", "1 Week", "1 Month", "3 Months"],
-    "2 Years":  ["1 Day", "5 Days", "1 Week", "1 Month", "3 Months"],
-    "1 Year":   ["1 Day", "5 Days", "1 Week", "1 Month", "3 Months"],
-    "Year To Date": ["1 Day", "5 Days", "1 Week", "1 Month", "3 Months"],
-    "6 Months": ["30 Minutes", "1 Hour", "1.5 Hours", "1 Day", "5 Days", "1 Week", "1 Month", "3 Months"],
-    "3 Months": ["15 Minutes", "30 Minutes", "1 Hour", "1.5 Hours", "1 Day", "5 Days", "1 Week", "1 Month", "3 Months"],
-    "1 Month":  ["5 Minutes", "15 Minutes", "30 Minutes", "1 Hour", "1.5 Hours", "1 Day", "5 Days", "1 Week"],
-    "5 Days":   ["5 Minutes", "15 Minutes", "30 Minutes", "1 Hour", "1.5 Hours", "1 Day", "5 Days"],
-    "1 Day":    ["5 Minutes", "15 Minutes", "30 Minutes", "1 Hour", "1.5 Hours", "1 Day"]
+    '10 Years': ['1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+    '5 Years': ['1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+    '2 Years': ['1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+    '1 Year': ['1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+    'Year To Date': ['1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+    '6 Months': ['30 Minutes', '1 Hour', '1.5 Hours', '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+    '3 Months': ['15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours', '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+    '1 Month': ['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours', '1 Day', '5 Days', '1 Week'],
+    '5 Days': ['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours', '1 Day', '5 Days'],
+    '1 Day': ['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours', '1 Day']
 }
 
 ticker_df = pd.read_csv("total_tickers.csv")
