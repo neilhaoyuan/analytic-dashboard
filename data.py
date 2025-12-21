@@ -111,6 +111,8 @@ def get_summary_table(ticker_list, shares_dict, period, interval):
         initial_price = ohlc_data['Close'].iloc[0]
         current_price = ohlc_data['Close'].iloc[-1]
         return_pct = ((current_price - initial_price) / initial_price) * 100
+        daily_returns = ohlc_data['Close'].pct_change().dropna()
+        std_dev = daily_returns.std() * 100
 
         num_shares = shares_dict.get(ticker)
         value = current_price * num_shares
@@ -121,6 +123,7 @@ def get_summary_table(ticker_list, shares_dict, period, interval):
         summary_table.append({
             'Ticker': ticker,
             '% Return': return_pct,
+            '% Returns Std Dev': std_dev,
             'Current Volume': volume, 
             'Current Price': current_price,
             'Sector': sector,
@@ -136,6 +139,7 @@ def get_summary_table(ticker_list, shares_dict, period, interval):
     df['Current Price'] = df['Current Price'].round(2)
     df['Portfolio Value'] = df['Portfolio Value'].round(2)
     df['% Return'] = df['% Return'].round(2)
+    df['% Returns Std Dev'] = df['% Returns Std Dev'].round(2)
     df['% Portfolio Value'] = ((df['Portfolio Value'] / total_value) * 100).round(2)
 
     return df
