@@ -3,6 +3,7 @@ from dash import html, dcc, callback, Output, Input, dash_table
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
+import pandas as pd
 import data
 
 dash.register_page(__name__, href='/sectors')
@@ -54,6 +55,17 @@ layout = html.Div([
 ])
 
 @callback(
+        Output('market-interval-select-dropdown', 'options'),
+        Output('market-interval-select-dropdown', 'value'),
+        Input('market-period-select-dropdown', 'value')
+)
+def update_market_interval_options(period):
+    # Returns valid intervals and a default
+    valid_interval = data.get_valid_interval(period)
+    default_interval = valid_interval[0]
+    return valid_interval, default_interval
+
+@callback(
         Output('comm-sector', 'figure'),
         Output('cons-disc-sector', 'figure'),
         Output('cons-stap-sector', 'figure'),
@@ -65,6 +77,7 @@ layout = html.Div([
         Output('real-est-sector', 'figure'),
         Output('tech-sector', 'figure'),
         Output('util-sector', 'figure'),
+        Output('sector-corr-heatmap', 'figure'),
         Input('sector-period-select-dropdown', 'value'),
         Input('sector-interval-select-dropdown', 'value')
 )
@@ -93,5 +106,33 @@ def update_index_graphs(period, interval):
     tech = data.create_candlestick_graph(tech_data, 'Technology (XLK)')
     util = data.create_candlestick_graph(util_data, 'Utilities (XLU)')
 
-    return comm, consdisc, consstap, ener, fin, health, indus, mats, reales, tech, util
+    sectors_df = pd.DataFrame({
+        'Comms': comm_data['Close'],
+        'Cons Disc': consdisc_data['Close'],
+        'Cons Staple': consstap_data['Close'],
+        'Energy': ener_data['Close'],
+        'Financial': fin_data['Close'],
+        'Healthcare': health_data['Close'],
+        'Industrial': indus_data['Close'],
+        'Materials': mats_data['Close'],
+        'Real Estate': reales_data['Close'],
+        'Technology': tech_data['Close'],
+        'Utilities': util_data['Close']
+    }).dropna()
 
+    sectors_weekly_close = data.get_weekly_close(sectors_df)
+    sectors_corr_matrix = data.get_correlation_data(sectors_weekly_close)
+
+    fig = go.Figure(data=go.Heatmap(
+        x=sectors_corr_matrix.columns,
+        y=sectors_corr_matrix.index,
+        z=sectors_corr_matrix.values,
+        colorscale='RdBu_r',
+        zmin=-1,
+        zmax=1,
+        zmid=0,
+        texttemplate='%{z:.2f}',
+        textfont={"size": 10}
+    )).update_layout(title='Sector Correlation Matrix')
+
+    return comm, consdisc, consstap, ener, fin, health, indus, mats, reales, tech, util, fig

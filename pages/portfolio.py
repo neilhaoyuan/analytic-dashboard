@@ -242,11 +242,22 @@ def update_sector_graph(ticker_list):
     sector_df = data.get_sector_info(ticker_list)
     sector_counts = sector_df.groupby('Sector').size().reset_index(name='Count')
 
+    sector_companies = sector_df.groupby('Sector')['Ticker'].agg(', '.join).reset_index()
+    sector_companies.columns = ['Sector', 'Companies']
+    sector_data = sector_counts.merge(sector_companies, on='Sector')
+
+
     fig = go.Figure(data=[go.Pie(
-        labels=sector_counts['Sector'],
-        values=sector_counts['Count'],
+        labels=sector_data['Sector'],
+        values=sector_data['Count'],
         hole=0.3,
-        textinfo='label+percent'
+        textinfo='label+percent',
+        hovertemplate=(
+            '<b>%{label}</b><br>'
+            'Count: %{value}<br>'
+            'Companies: %{customdata}<br>'
+            '<extra></extra>'),
+        customdata=sector_data['Companies']
     )]).update_layout(
         title='Portfolio Sector Breakdown',
         showlegend=True)

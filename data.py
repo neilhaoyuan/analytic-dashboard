@@ -38,7 +38,6 @@ def get_close_data(ticker_list, period, interval):
 # Used for std, cor, etc
 def get_weekly_close(close_df):
     close_df2 = close_df.copy()
-    close_df2.index = pd.to_datetime(close_df2.index)
     close_df2["Week"] = close_df2.index.to_period("W")
     mask = close_df2["Week"] != close_df2["Week"].shift(-1)
     weekly_close = close_df2.loc[mask].drop(columns="Week")
@@ -145,13 +144,21 @@ def create_candlestick_graph(ohlc_df, title):
     # Empty ticker, no figure generated
     if ohlc_df.empty:
         return go.Figure()
-        
+
+    initial_price = ohlc_df["Close"].iloc[0]
+    current_price = ohlc_df["Close"].iloc[-1]
+    pct_change = ((current_price - initial_price) / initial_price) * 100
+    
+    color = 'green' if pct_change >= 0 else 'red'
+    sign = '+' if pct_change >= 0 else ''
+    pct_label = f"{title} <span style='color:{color}'>{sign}{pct_change:.2f}%</span>"
+
     fig = go.Figure(go.Candlestick(
         x=ohlc_df.index,
         open=ohlc_df["Open"],
         high=ohlc_df["High"],
         low=ohlc_df["Low"],
         close=ohlc_df["Close"]
-    )).update_layout(title=f"{title}")
+    )).update_layout(title=pct_label)
     
     return fig

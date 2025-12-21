@@ -53,9 +53,9 @@ layout = html.Div([
 ])
 
 @callback(
-        Output('market-interval-select-dropdown', 'options'),
-        Output('market-interval-select-dropdown', 'value'),
-        Input('market-period-select-dropdown', 'value')
+        Output('sector-interval-select-dropdown', 'options'),
+        Output('sector-interval-select-dropdown', 'value'),
+        Input('sector-period-select-dropdown', 'value')
 )
 def update_market_interval_options(period):
     # Returns valid intervals and a default
