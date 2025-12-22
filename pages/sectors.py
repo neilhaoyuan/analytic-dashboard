@@ -8,51 +8,58 @@ import data
 
 dash.register_page(__name__, href='/sectors')
 
-layout = html.Div([
-    html.Div('Sector Specific Analysis'),
+layout = dbc.Container([
+    html.H2("Sector Specific Analysis"),
 
-    html.Div([
-        dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
-                      '3 Months', '1 Month', '5 Days', '1 Day'],
-                     id='sector-period-select-dropdown', value='1 Year', multi=False),
+    # Controls
+    dbc.Row([
+        dbc.Col([
+            html.Label("Select Period"),
+            dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
+                        '3 Months', '1 Month', '5 Days', '1 Day'],
+                        id='sector-period-select-dropdown', value='1 Year', multi=False, style={'color': 'black'})], width=6),
 
-        dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
-                      '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
-                     id='sector-interval-select-dropdown', value='1 Day', multi=False)
+        dbc.Col([
+            html.Label("Select Interval"),
+            dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
+                        '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+                        id='sector-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
     ]),
 
-    html.Div([
-        html.Div([dcc.Graph(id='comm-sector')], style={'width': '33%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='comm-sector', style={'height': '50vh'}), width=4),
 
-        html.Div([dcc.Graph(id='cons-disc-sector')], style={'width': '33%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='cons-disc-sector', style={'height': '50vh'}), width=4),
 
-        html.Div([dcc.Graph(id='cons-stap-sector')], style={'width': '33%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='cons-stap-sector', style={'height': '50vh'}), width=4)
     ]),
 
-    html.Div([
-        html.Div([dcc.Graph(id='energy-sector')], style={'width': '33%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='energy-sector', style={'height': '50vh'}), width=4),
 
-        html.Div([dcc.Graph(id='financial-sector')], style={'width': '33%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='financial-sector', style={'height': '50vh'}), width=4),
 
-        html.Div([dcc.Graph(id='health-sector')], style={'width': '33%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='health-sector', style={'height': '50vh'}), width=4),
     ]),
 
-    html.Div([
-        html.Div([dcc.Graph(id='indust-sector')], style={'width': '33%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='indust-sector', style={'height': '50vh'}), width=4),
 
-        html.Div([dcc.Graph(id='materials-sector')], style={'width': '33%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='materials-sector', style={'height': '50vh'}), width=4),
 
-        html.Div([dcc.Graph(id='real-est-sector')], style={'width': '33%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='real-est-sector', style={'height': '50vh'}), width=4),
     ]),
 
-    html.Div([
-        html.Div([dcc.Graph(id='tech-sector')], style={'width': '33%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='tech-sector', style={'height': '50vh'}), width=4),
 
-        html.Div([dcc.Graph(id='util-sector')], style={'width': '33%', 'display': 'inline-block'})
-    ]),
+        dbc.Col(dcc.Graph(id='util-sector', style={'height': '50vh'}), width=4),
+    ], justify="center"),
 
-    html.Div([dcc.Graph(id='sector-corr-heatmap')])
-])
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='sector-corr-heatmap', style={'height': '70vh'}), width=8)
+    ], justify="center")
+], fluid=True)
 
 @callback(
         Output('market-interval-select-dropdown', 'options'),
@@ -132,7 +139,12 @@ def update_index_graphs(period, interval):
         zmax=1,
         zmid=0,
         texttemplate='%{z:.2f}',
-        textfont={"size": 10}
-    )).update_layout(title='Sector Correlation Matrix')
+        textfont={"size": 10},
+        showscale=False
+    )).update_layout(
+        title='Sector Correlation Matrix', 
+        title_x = 0.1, 
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+        font={'color': 'white'})
 
     return comm, consdisc, consstap, ener, fin, health, indus, mats, reales, tech, util, fig

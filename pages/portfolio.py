@@ -10,61 +10,77 @@ from config import ticker_df
 dash.register_page(__name__, path='/')  
 
 # App layout
-layout = html.Div([
+layout = dbc.Container([
     dcc.Store(id='close-data-storage'),
 
-    html.Div("Portfolio Analysis"),
+    html.H2("Portfolio Analysis"),
 
     # Controls
-    html.Div([
-        dcc.Dropdown(ticker_df["Symbol"], id='ticker-input', value=['AAPL', 'GOOGL', 'NVDA'], multi=True),
+    dbc.Row([
+        dbc.Col([
+            html.Label("Select Tickers"),
+            dcc.Dropdown(ticker_df["Symbol"], id='ticker-input', value=['AAPL', 'GOOGL', 'NVDA'], multi=True, style={'backgroundColor': 'white', 'color': 'black'}),
+        ], width=12)
+    ]),
 
-        html.Div("Shares Per Stock"),
-        dash_table.DataTable(id='shares-table',
-                             editable=False,
-                            style_cell={'textAlign': 'center'},
-                            style_header={'fontWeight': 'bold'}),
+    dbc.Row([
+        dbc.Col([
+            html.Label("Shares Per Stock"),
+            dash_table.DataTable(id='shares-table',
+                            editable=False,
+                            style_cell={'textAlign': 'center',
+                                        'backgroundColor': 'white',
+                                        'color': 'black'},
+                            style_header={'fontWeight': 'bold',
+                                          'backgroundColor': 'white',
+                                          'color' : 'black'})], width=12)
+    ]),
 
-        dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
-                      '3 Months', '1 Month', '5 Days', '1 Day'],
-                     id='period-select-dropdown', value='1 Year', multi=False),
+    dbc.Row([
+        dbc.Col([
+            html.Label("Select Period"),
+            dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
+                        '3 Months', '1 Month', '5 Days', '1 Day'],
+                        id='period-select-dropdown', value='1 Year', multi=False, style={'color': 'black'})], width=6),
 
-        dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
-                      '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
-                     id='interval-select-dropdown', value='1 Day', multi=False),
+        dbc.Col([
+            html.Label("Select Interval"),
+            dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
+                        '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+                        id='interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
     ]),
 
     # Summary table
-    html.Div([
-        html.Div(id='summary-table')
-        ]),
+    dbc.Row([
+        html.Label("Portfolio Summary"),
+        dbc.Col(html.Div(id='summary-table', style={'height': '50vh'}), width=12)
+    ]),
 
     # Plotting line, candle
-    html.Div([
-        html.Div([
-            dcc.Graph(id='line-graph')], style={'width': '50%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='line-graph', style={'height': '50vh'}), width=6),
             
-        html.Div([
-            dcc.Dropdown(id='candle-ticker-select', value=None, multi=False),
-            dcc.Graph(id='candlestick-graph')], style={'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}),
+        dbc.Col([
+            dcc.Dropdown(id='candle-ticker-select', value=None, multi=False, style={'color': 'black'}),
+            dcc.Graph(id='candlestick-graph', style={'height': '50vh'})], width=6)
     ]),
 
     # Plotting cumulative graphs and trading volumes
-    html.Div([
-        html.Div([dcc.Graph(id='cumulative-returns-graph')], style={'width': '50%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='cumulative-returns-graph', style={'height': '50vh'}), width=6),
         
-        html.Div([
-                    dcc.Dropdown(id='volume-ticker-select', value=None, multi=False, placeholder='Select for volume'),  # ← NEW DROPDOWN
-                    dcc.Graph(id='volume-graph')], style={'width': '50%', 'display': 'inline-block'})
+        dbc.Col([
+            dcc.Dropdown(id='volume-ticker-select', value=None, multi=False, placeholder='Select for volume', style={'color': 'black'}),
+            dcc.Graph(id='volume-graph', style={'height': '50vh'})], width=6)
     ]),
 
     # Correlation heatmap and sector breakdown 
-    html.Div([
-        html.Div([dcc.Graph(id='corr-heatmap')], style={'width': '50%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='corr-heatmap', style={'height': '50vh'}), width=6),
 
-        html.Div([dcc.Graph(id='sector-graph')], style={'width': '50%', 'display': 'inline-block'})
+        dbc.Col(dcc.Graph(id='sector-graph', style={'height': '50vh'}), width=6)
     ])
-])
+], fluid=True)
 
 @callback(
         Output('interval-select-dropdown', 'options'),
@@ -124,8 +140,13 @@ def update_line_graph(closes_dict, ticker_list):
         closes_df,
         x=closes_df.index,
         y=closes_df.columns,
-        title="Individual Stock Performance"
-    )
+        title="Individual Stock Performance",
+    ).update_layout(        
+        xaxis_title=None,
+        yaxis_title='Value ($)',
+        paper_bgcolor='rgba(0, 0, 0, 0)', 
+        plot_bgcolor='rgb(0, 0, 0, 0)',
+        font={'color': 'white'})
     
     # Determine candle-stick and volume dropdown
     candle_options = ticker_list
@@ -174,11 +195,14 @@ def update_cumulative_returns(closes_dict, table_data):
         y=returns_df['Portfolio Value'],
         line=dict(color='#17becf', width=2),
         fill='tozeroy',
-        fillcolor="#c0e6ea"
+        fillcolor="#c0e6ea",
     )).update_layout(
         title='Cumulative Portfolio Returns',
-        xaxis_title='Date',
-        yaxis_title='Portfolio Value ($)')
+        xaxis_title=None,
+        yaxis_title='Portfolio Value ($)',
+        paper_bgcolor='rgba(0, 0, 0, 0)', 
+        plot_bgcolor='rgb(0, 0, 0, 0)',
+        font={'color': 'white'})
     
     return fig
 
@@ -195,7 +219,11 @@ def update_volume_graph(ticker, period, interval):
     if volume.empty:
         return go.Figure()
     
-    fig = go.Figure(go.Bar(x=volume.index, y=volume)).update_layout(title=f"Trading Volume Per Day")
+    fig = go.Figure(go.Bar(x=volume.index, y=volume)).update_layout(
+        title=f"Trading Volume Per Day", 
+        paper_bgcolor='rgba(0, 0, 0, 0)', 
+        plot_bgcolor='rgb(0, 0, 0, 0)',
+        font={'color': 'white'})
     
     return fig
 
@@ -226,8 +254,11 @@ def update_heatmap(closes_dict, ticker_list):
         zmax=1,
         zmid=0,
         texttemplate='%{z:.2f}',
-        textfont={"size": 10}
-    )).update_layout(title='Correlation Matrix')
+        textfont={"size": 10},
+        showscale=False
+    )).update_layout(title='Correlation Matrix', 
+                     paper_bgcolor='rgba(0, 0, 0, 0)', 
+                     font={'color': 'white'})
 
     return fig
 
@@ -260,7 +291,9 @@ def update_sector_graph(ticker_list):
         customdata=sector_data['Companies']
     )]).update_layout(
         title='Portfolio Sector Breakdown',
-        showlegend=True)
+        showlegend=True,
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+        font={'color': 'white'})
     
     return fig
 

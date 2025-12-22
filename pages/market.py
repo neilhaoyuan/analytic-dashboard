@@ -7,50 +7,55 @@ import data
 
 dash.register_page(__name__, href='/market')
 
-layout = html.Div([
-    html.Div('Broad Market Analysis'),
+layout = dbc.Container([
+    html.H2("Broad Market Analysis"),
 
-    html.Div([
-        dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
-                      '3 Months', '1 Month', '5 Days', '1 Day'],
-                     id='market-period-select-dropdown', value='1 Year', multi=False),
+    # Controls
+    dbc.Row([
+        dbc.Col([
+            html.Label("Select Period"),
+            dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
+                        '3 Months', '1 Month', '5 Days', '1 Day'],
+                        id='market-period-select-dropdown', value='1 Year', multi=False, style={'color': 'black'})], width=6),
 
-        dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
-                      '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
-                     id='market-interval-select-dropdown', value='1 Day', multi=False)
+        dbc.Col([
+            html.Label("Select Interval"),
+            dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
+                        '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
+                        id='market-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
     ]),
 
-    html.Div([
-        html.Div([dcc.Graph(id='smp500-graph')], style={'width': '50%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='smp500-graph', style={'height': '50vh'}), width=6),
 
-        html.Div([dcc.Graph(id='nasdaq-graph')], style={'width': '50%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='nasdaq-graph', style={'height': '50vh'}), width=6),
     ]),
 
-    html.Div([
-        html.Div([dcc.Graph(id='smp-tsx-graph')], style={'width': '50%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='smp-tsx-graph', style={'height': '50vh'}), width=6),
 
-        html.Div([dcc.Graph(id='russel-2k-graph')], style={'width': '50%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='russel-2k-graph', style={'height': '50vh'}), width=6),
     ]),
 
-    html.Div([
-        html.Div([dcc.Graph(id='volatility-graph')], style={'width': '50%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='volatility-graph', style={'height': '50vh'}), width=6),
 
-        html.Div([dcc.Graph(id='gold-graph')], style={'width': '50%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='gold-graph', style={'height': '50vh'}), width=6),
     ]),
 
-    html.Div([
-        html.Div([dcc.Graph(id='us-dollar-graph')], style={'width': '50%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='us-dollar-graph', style={'height': '50vh'}), width=6),
 
-        html.Div([dcc.Graph(id='cad-dollar-graph')], style={'width': '50%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='cad-dollar-graph', style={'height': '50vh'}), width=6),
     ]),
 
     
-    html.Div([
-        html.Div([dcc.Graph(id='5y-treasury-yield-graph')], style={'width': '50%', 'display': 'inline-block'}),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='5y-treasury-yield-graph', style={'height': '50vh'}), width=6),
 
-        html.Div([dcc.Graph(id='30y-treasury-yield-graph')], style={'width': '50%', 'display': 'inline-block'}),
+        dbc.Col(dcc.Graph(id='30y-treasury-yield-graph', style={'height': '50vh'}), width=6),
     ])
-])
+], fluid=True)
 
 @callback(
         Output('sector-interval-select-dropdown', 'options'),

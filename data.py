@@ -82,15 +82,11 @@ def get_sector_info(ticker_list):
     sector_data = []
     
     for ticker in ticker_list:
-        try:
-            sector = yf.Ticker(ticker).info.get('sector')
-            sector_data.append({
+        sector = yf.Ticker(ticker).info.get('sector')
+        sector = "N/A" if sector is None else sector
+        sector_data.append({
                     'Ticker': ticker,
                     'Sector': sector})
-        except:
-            sector_data.append({
-                    'Ticker': ticker,
-                    'Sector': 'N/A'})
     
     df = pd.DataFrame(sector_data)
     
@@ -119,6 +115,7 @@ def get_summary_table(ticker_list, shares_dict, period, interval):
         total_value += value
 
         sector = yf.Ticker(ticker).info.get('sector')
+        sector = "N/A" if sector is None else sector
 
         summary_table.append({
             'Ticker': ticker,
@@ -162,7 +159,11 @@ def create_candlestick_graph(ohlc_df, title):
         open=ohlc_df["Open"],
         high=ohlc_df["High"],
         low=ohlc_df["Low"],
-        close=ohlc_df["Close"]
-    )).update_layout(title=pct_label)
+        close=ohlc_df["Close"],
+    )).update_layout(title=pct_label, 
+                     paper_bgcolor='rgba(0, 0, 0, 0)', 
+                     plot_bgcolor='rgb(0, 0, 0, 0)', 
+                     font={'color': 'white'},
+                     xaxis_rangeslider_visible=False)
     
     return fig
