@@ -24,7 +24,7 @@ layout = dbc.Container([
             dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
                         '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
                         id='market-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
-    ]),
+    ], className='mb-4'),
 
     # Creating tabs 
     dbc.Tabs([
@@ -54,11 +54,28 @@ def update_market_interval_options(period):
 )
 def render_market_content(active_tab):
     if active_tab == 'market-summary':
-        return dbc.Row([
+        return [
+            dbc.Row([
             #Summary
             html.Label("Market Summary"),    
-            dbc.Col(html.Div(id='market-table', style={'height': '50vh'}), width=12)
-            ])
+            dbc.Col(html.Div(id='market-table'), width=12)
+            ], className='mb-5'),
+
+            dbc.Row([
+                html.Label("Recent Market News"),
+
+                dbc.Col([
+                    html.Div(
+                        id='market-news-cards', 
+                        style={
+                            'display': 'flex',
+                            'overflowX': 'scroll',
+                            'overflowY': 'hidden',
+                            'whiteSpace': 'nowrap',
+                            'padding': '10px 0'})
+                    ], width=12),
+            ],className='mb-3')
+        ]
     elif active_tab == 'market-charts':
         return [
             dbc.Row([
@@ -143,3 +160,39 @@ def update_sector_summary(period, interval):
     summary_df['Ticker'] = summary_df['Ticker'].replace(market_map)
 
     return dbc.Table.from_dataframe(summary_df, striped=True, bordered=True, hover=True)
+
+@callback(
+        Output('market-news-cards', 'children'),
+        Input('market-period-select-dropdown', 'value'),
+        Input('market-interval-select-dropdown', 'value')
+)
+def update_market_news_cards(period, interval):    
+    news_df = data.get_news(['^GSPC', '^IXIC', '^RUT', '^GSPTSE', '^VIX', 'GC=F', 'DX-Y.NYB', '^XDC', '^FVX', '^TYX'], 1)
+    
+    news_cards = []
+    for i, article in news_df.iterrows():
+        card = dbc.Card(
+            html.A(
+                [
+                    dbc.CardImg(src=article['image']),
+                    dbc.CardBody(html.P(article['title'], 
+                                        className="card-text",
+                                        style={
+                                                'lineHeight': '1.4',
+                                                'whiteSpace': 'normal',
+                                                'wordBreak': 'break-word',
+                                                'overflowWrap': 'break-word',})),
+                ],
+                href=article['link'],
+                target='_blank',
+                style={"textDecoration": "none", "color": "inherit"}
+            ), style={                'minWidth': '280px',
+                'maxWidth': '280px',
+                'height': '260px',
+                'marginRight': '15px',
+                'flex': '0 0 auto',
+                'backgroundColor': '#2d2d2d'}
+        )
+        news_cards.append(card)
+    
+    return news_cards

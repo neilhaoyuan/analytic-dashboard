@@ -25,7 +25,7 @@ layout = dbc.Container([
             dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
                         '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
                         id='sector-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
-    ]),
+    ], className='mb-4'),
 
     # Creating tabs 
     dbc.Tabs([
@@ -54,12 +54,29 @@ def update_market_interval_options(period):
         Input('sector-tabs', 'active_tab')
 )
 def render_tab_content(active_tab):
-    if active_tab == 'summary':
-        return dbc.Row([
+    if active_tab == 'sector-summary':
+        return [
+            dbc.Row([
             #Summary
             html.Label("Sector Summary"),    
-            dbc.Col(html.Div(id='sector-table', style={'height': '50vh'}), width=12)
-            ])
+            dbc.Col(html.Div(id='sector-table'), width=12)
+            ], className='mb-5'),
+
+            dbc.Row([
+                html.Label("Recent Sector News"),
+
+                dbc.Col([
+                    html.Div(
+                        id='sector-news-cards', 
+                        style={
+                            'display': 'flex',
+                            'overflowX': 'scroll',
+                            'overflowY': 'hidden',
+                            'whiteSpace': 'nowrap',
+                            'padding': '10px 0'})
+                    ], width=12),
+            ], className='mb-3')
+        ]
     elif active_tab == 'sector-charts':
         return [
             dbc.Row([
@@ -181,7 +198,43 @@ def update_index_graphs(period, interval):
 )
 def update_sector_summary(period, interval):
     summary_df = data.get_summary_table(['XLC', 'XLY', 'XLP', 'XLE', 'XLF', 'XLV', 'XLI', 'XLB', 'XLRE', 'XLK', 'XLU'], None, period, interval, False)
-
+    
     summary_df['Ticker'] = summary_df['Ticker'].replace(sector_map)
 
     return dbc.Table.from_dataframe(summary_df, striped=True, bordered=True, hover=True)
+
+@callback(
+        Output('sector-news-cards', 'children'),
+        Input('sector-period-select-dropdown', 'value'),
+        Input('sector-interval-select-dropdown', 'value')
+)
+def update_sector_news_cards(period, interval):    
+    news_df = data.get_news(['XLC', 'XLY', 'XLP', 'XLE', 'XLF', 'XLV', 'XLI', 'XLB', 'XLRE', 'XLK', 'XLU'], 1)
+    
+    news_cards = []
+    for i, article in news_df.iterrows():
+        card = dbc.Card(
+            html.A(
+                [
+                    dbc.CardImg(src=article['image']),
+                    dbc.CardBody(html.P(article['title'], 
+                                        className="card-text",
+                                        style={
+                                                'lineHeight': '1.4',
+                                                'whiteSpace': 'normal',
+                                                'wordBreak': 'break-word',
+                                                'overflowWrap': 'break-word',})),
+                ],
+                href=article['link'],
+                target='_blank',
+                style={"textDecoration": "none", "color": "inherit"}
+            ), style={                'minWidth': '280px',
+                'maxWidth': '280px',
+                'height': '260px',
+                'marginRight': '15px',
+                'flex': '0 0 auto',
+                'backgroundColor': '#2d2d2d'}
+        )
+        news_cards.append(card)
+    
+    return news_cards

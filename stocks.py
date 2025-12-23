@@ -8,7 +8,7 @@ def scrape_us_tickers():
 
     exchange_name_map = {
         "N": "NYSE",
-        "A": "AMEX",
+        "A": "AMEX", 
         "P": "NYSE ARCA",
         "Z": "BATS",
         "Q": "NASDAQ"}

@@ -104,11 +104,19 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
         ohlc_data = get_ohlc_data(ticker, period, interval)
         
         volume = ohlc_data['Volume'].iloc[-1]
-        initial_price = ohlc_data['Close'].iloc[0]
-        current_price = ohlc_data['Close'].iloc[-1]
+        initial_price = ohlc_data.dropna()['Close'].iloc[0]
+        current_price = ohlc_data.dropna()['Close'].iloc[-1]
         return_pct = ((current_price - initial_price) / initial_price) * 100
-        daily_returns = ohlc_data['Close'].pct_change().dropna()
-        std_dev = daily_returns.std() * 100
+        intervally_returns = ohlc_data['Close'].pct_change().dropna()
+
+        average_intervally_returns = intervally_returns.mean() * 100
+        std_dev = intervally_returns.std() * 100
+        sharpe_ratio = average_intervally_returns / std_dev
+
+        cum_return = (1 + intervally_returns).cumprod()
+        cum_max = cum_return.cummax()
+        drawdown = (cum_return - cum_max) / cum_max * 100
+        max_drawdown = drawdown.min()
 
         if port_page:
             num_shares = shares_dict.get(ticker)
@@ -121,9 +129,12 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
             summary_table.append({
                 'Ticker': ticker,
                 '% Return': return_pct,
+                'Average % Return': average_intervally_returns,
                 '% Returns Std Dev': std_dev,
+                'Max Drawdown %': max_drawdown,
+                'Sharpe Ratio': sharpe_ratio,
                 'Current Volume': volume, 
-                'Current Price': current_price,
+                'Current Price ($)': current_price,
                 'Sector': sector,
                 'Shares': num_shares,
                 'Portfolio Value': value
@@ -133,24 +144,33 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
                 return pd.DataFrame()
 
             df = pd.DataFrame(summary_table)
-            df['Current Price'] = df['Current Price'].round(2)
+            df['Current Price ($)'] = df['Current Price ($)'].round(2)
             df['Portfolio Value'] = df['Portfolio Value'].round(2)
             df['% Return'] = df['% Return'].round(2)
             df['% Returns Std Dev'] = df['% Returns Std Dev'].round(2)
             df['% Portfolio Value'] = ((df['Portfolio Value'] / total_value) * 100).round(2)
+            df['Average % Return'] = df['Average % Return'].round(2)
+            df['Sharpe Ratio'] = df['Sharpe Ratio'].round(2)
+            df['Max Drawdown %'] = df['Max Drawdown %'].round(2)
 
         else:
             summary_table.append({
                 'Ticker': ticker,
                 '% Return': return_pct,
+                'Average % Return': average_intervally_returns,
                 '% Returns Std Dev': std_dev,
-                'Current Price': current_price,
+                'Max Drawdown %': max_drawdown,
+                'Sharpe Ratio': sharpe_ratio,
+                'Current Price ($)': current_price,
             })
 
             df = pd.DataFrame(summary_table)
-            df['Current Price'] = df['Current Price'].round(2)
+            df['Current Price ($)'] = df['Current Price ($)'].round(2)
             df['% Return'] = df['% Return'].round(2)
             df['% Returns Std Dev'] = df['% Returns Std Dev'].round(2)
+            df['Average % Return'] = df['Average % Return'].round(2)
+            df['Sharpe Ratio'] = df['Sharpe Ratio'].round(2)
+            df['Max Drawdown %'] = df['Max Drawdown %'].round(2)
 
     return df
 
@@ -159,8 +179,8 @@ def create_candlestick_graph(ohlc_df, title):
     if ohlc_df.empty:
         return go.Figure()
 
-    initial_price = ohlc_df["Close"].iloc[0]
-    current_price = ohlc_df["Close"].iloc[-1]
+    initial_price = ohlc_df.dropna()["Close"].iloc[0]
+    current_price = ohlc_df.dropna()["Close"].iloc[-1]
     pct_change = ((current_price - initial_price) / initial_price) * 100
     
     color = 'green' if pct_change >= 0 else 'red'
@@ -175,7 +195,7 @@ def create_candlestick_graph(ohlc_df, title):
         close=ohlc_df["Close"],
     )).update_layout(title=pct_label, 
                      paper_bgcolor='rgba(0, 0, 0, 0)', 
-                     plot_bgcolor='rgb(0, 0, 0, 0)', 
+                     plot_bgcolor='#1e1e1e', 
                      font={'color': 'white'},
                      xaxis_rangeslider_visible=False)
     
