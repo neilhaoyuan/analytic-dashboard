@@ -26,39 +26,15 @@ layout = dbc.Container([
                         id='sector-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
     ]),
 
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='comm-sector', style={'height': '50vh'}), width=4),
-
-        dbc.Col(dcc.Graph(id='cons-disc-sector', style={'height': '50vh'}), width=4),
-
-        dbc.Col(dcc.Graph(id='cons-stap-sector', style={'height': '50vh'}), width=4)
-    ]),
-
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='energy-sector', style={'height': '50vh'}), width=4),
-
-        dbc.Col(dcc.Graph(id='financial-sector', style={'height': '50vh'}), width=4),
-
-        dbc.Col(dcc.Graph(id='health-sector', style={'height': '50vh'}), width=4),
-    ]),
-
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='indust-sector', style={'height': '50vh'}), width=4),
-
-        dbc.Col(dcc.Graph(id='materials-sector', style={'height': '50vh'}), width=4),
-
-        dbc.Col(dcc.Graph(id='real-est-sector', style={'height': '50vh'}), width=4),
-    ]),
-
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='tech-sector', style={'height': '50vh'}), width=4),
-
-        dbc.Col(dcc.Graph(id='util-sector', style={'height': '50vh'}), width=4),
-    ], justify="center"),
-
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='sector-corr-heatmap', style={'height': '70vh'}), width=8)
-    ], justify="center")
+    # Creating tabs 
+    dbc.Tabs([
+        dbc.Tab(label='Charts', tab_id='sector-charts'),
+        dbc.Tab(label='Summary', tab_id='sector-summary')
+    ], id='sector-tabs'),
+    
+    dbc.Spinner([
+        html.Div(id="sector-content", className="p-4"),
+        ],delay_show=100),
 ], fluid=True)
 
 @callback(
@@ -71,6 +47,54 @@ def update_market_interval_options(period):
     valid_interval = data.get_valid_interval(period)
     default_interval = valid_interval[0]
     return valid_interval, default_interval
+
+@callback(
+        Output('sector-content', 'children'),
+        Input('sector-tabs', 'active_tab')
+)
+def render_tab_content(active_tab):
+    if active_tab == 'summary':
+        return dbc.Row([
+            #Summary
+            html.Label("Sector Summary"),    
+            dbc.Col(html.Div(id='sector-table', style={'height': '50vh'}), width=12)
+            ])
+    elif active_tab == 'sector-charts':
+        return [
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='comm-sector', style={'height': '50vh'}), width=4),
+
+                dbc.Col(dcc.Graph(id='cons-disc-sector', style={'height': '50vh'}), width=4),
+
+                dbc.Col(dcc.Graph(id='cons-stap-sector', style={'height': '50vh'}), width=4)
+            ]),
+
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='energy-sector', style={'height': '50vh'}), width=4),
+
+                dbc.Col(dcc.Graph(id='financial-sector', style={'height': '50vh'}), width=4),
+
+                dbc.Col(dcc.Graph(id='health-sector', style={'height': '50vh'}), width=4),
+            ]),
+
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='indust-sector', style={'height': '50vh'}), width=4),
+
+                dbc.Col(dcc.Graph(id='materials-sector', style={'height': '50vh'}), width=4),
+
+                dbc.Col(dcc.Graph(id='real-est-sector', style={'height': '50vh'}), width=4),
+            ]),
+
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='tech-sector', style={'height': '50vh'}), width=4),
+
+                dbc.Col(dcc.Graph(id='util-sector', style={'height': '50vh'}), width=4),
+            ], justify="center"),
+
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='sector-corr-heatmap', style={'height': '70vh'}), width=8)
+            ], justify="center")
+        ]
 
 @callback(
         Output('comm-sector', 'figure'),

@@ -25,36 +25,15 @@ layout = dbc.Container([
                         id='market-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
     ]),
 
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='smp500-graph', style={'height': '50vh'}), width=6),
-
-        dbc.Col(dcc.Graph(id='nasdaq-graph', style={'height': '50vh'}), width=6),
-    ]),
-
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='smp-tsx-graph', style={'height': '50vh'}), width=6),
-
-        dbc.Col(dcc.Graph(id='russel-2k-graph', style={'height': '50vh'}), width=6),
-    ]),
-
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='volatility-graph', style={'height': '50vh'}), width=6),
-
-        dbc.Col(dcc.Graph(id='gold-graph', style={'height': '50vh'}), width=6),
-    ]),
-
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='us-dollar-graph', style={'height': '50vh'}), width=6),
-
-        dbc.Col(dcc.Graph(id='cad-dollar-graph', style={'height': '50vh'}), width=6),
-    ]),
-
+    # Creating tabs 
+    dbc.Tabs([
+        dbc.Tab(label='Charts', tab_id='market-charts'),
+        dbc.Tab(label='Summary', tab_id='market-summary')
+    ], id='market-tabs'),
     
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='5y-treasury-yield-graph', style={'height': '50vh'}), width=6),
-
-        dbc.Col(dcc.Graph(id='30y-treasury-yield-graph', style={'height': '50vh'}), width=6),
-    ])
+    dbc.Spinner([
+        html.Div(id="market-content", className="p-4"),
+        ],delay_show=100),
 ], fluid=True)
 
 @callback(
@@ -67,6 +46,51 @@ def update_market_interval_options(period):
     valid_interval = data.get_valid_interval(period)
     default_interval = valid_interval[0]
     return valid_interval, default_interval
+
+@callback(
+        Output('market-content', 'children'),
+        Input('market-tabs', 'active_tab')
+)
+def render_market_content(active_tab):
+    if active_tab == 'market-summary':
+        return dbc.Row([
+            #Summary
+            html.Label("Market Summary"),    
+            dbc.Col(html.Div(id='market-table', style={'height': '50vh'}), width=12)
+            ])
+    elif active_tab == 'market-charts':
+        return [
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='smp500-graph', style={'height': '50vh'}), width=6),
+
+                dbc.Col(dcc.Graph(id='nasdaq-graph', style={'height': '50vh'}), width=6),
+            ]),
+
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='smp-tsx-graph', style={'height': '50vh'}), width=6),
+
+                dbc.Col(dcc.Graph(id='russel-2k-graph', style={'height': '50vh'}), width=6),
+            ]),
+
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='volatility-graph', style={'height': '50vh'}), width=6),
+
+                dbc.Col(dcc.Graph(id='gold-graph', style={'height': '50vh'}), width=6),
+            ]),
+
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='us-dollar-graph', style={'height': '50vh'}), width=6),
+
+                dbc.Col(dcc.Graph(id='cad-dollar-graph', style={'height': '50vh'}), width=6),
+            ]),
+
+                
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='5y-treasury-yield-graph', style={'height': '50vh'}), width=6),
+
+                dbc.Col(dcc.Graph(id='30y-treasury-yield-graph', style={'height': '50vh'}), width=6),
+            ])
+        ]
 
 @callback(
         Output('smp500-graph', 'figure'),

@@ -50,36 +50,15 @@ layout = dbc.Container([
                         id='interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
     ]),
 
-    # Summary table
-    dbc.Row([
-        html.Label("Portfolio Summary"),
-        dbc.Col(html.Div(id='summary-table', style={'height': '50vh'}), width=12)
-    ]),
-
-    # Plotting line, candle
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='line-graph', style={'height': '50vh'}), width=6),
-            
-        dbc.Col([
-            dcc.Dropdown(id='candle-ticker-select', value=None, multi=False, style={'color': 'black'}),
-            dcc.Graph(id='candlestick-graph', style={'height': '50vh'})], width=6)
-    ]),
-
-    # Plotting cumulative graphs and trading volumes
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='cumulative-returns-graph', style={'height': '50vh'}), width=6),
-        
-        dbc.Col([
-            dcc.Dropdown(id='volume-ticker-select', value=None, multi=False, placeholder='Select for volume', style={'color': 'black'}),
-            dcc.Graph(id='volume-graph', style={'height': '50vh'})], width=6)
-    ]),
-
-    # Correlation heatmap and sector breakdown 
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='corr-heatmap', style={'height': '50vh'}), width=6),
-
-        dbc.Col(dcc.Graph(id='sector-graph', style={'height': '50vh'}), width=6)
-    ])
+    # Creating tabs 
+    dbc.Tabs([
+        dbc.Tab(label='Charts', tab_id='charts'),
+        dbc.Tab(label='Summary', tab_id='summary')
+    ], id='portfolio-tabs'),
+    
+    dbc.Spinner([
+        html.Div(id="tab-content", className="p-4"),
+        ],delay_show=100),
 ], fluid=True)
 
 @callback(
@@ -109,6 +88,45 @@ def update_shares_table(ticker_list):
     data = [{ticker: 100 for ticker in ticker_list}]
     
     return columns, data
+
+@callback(
+        Output('tab-content', 'children'),
+        Input('portfolio-tabs', 'active_tab')
+)
+def render_tab_content(active_tab):
+    if active_tab == 'summary':
+        return dbc.Row([
+            #Summary
+            html.Label("Portfolio Summary"),    
+            dbc.Col(html.Div(id='summary-table', style={'height': '50vh'}), width=12)
+            ])
+    elif active_tab == 'charts':
+        return [
+            # Plotting line, candle
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='line-graph', style={'height': '50vh'}), width=6),
+                    
+                dbc.Col([
+                    dcc.Dropdown(id='candle-ticker-select', value=None, multi=False, style={'color': 'black'}),
+                    dcc.Graph(id='candlestick-graph', style={'height': '50vh'})], width=6)
+            ]),
+
+            # Plotting cumulative graphs and trading volumes
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='cumulative-returns-graph', style={'height': '50vh'}), width=6),
+                
+                dbc.Col([
+                    dcc.Dropdown(id='volume-ticker-select', value=None, multi=False, placeholder='Select for volume', style={'color': 'black'}),
+                    dcc.Graph(id='volume-graph', style={'height': '50vh'})], width=6)
+            ]),
+
+            # Correlation heatmap and sector breakdown 
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='corr-heatmap', style={'height': '50vh'}), width=6),
+
+                dbc.Col(dcc.Graph(id='sector-graph', style={'height': '50vh'}), width=6)
+            ])
+        ]
 
 @callback(
         Output('close-data-storage', 'data'),
