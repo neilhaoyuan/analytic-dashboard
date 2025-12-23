@@ -26,4 +26,31 @@ valid_intervals_map = {
     '1 Day': ['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours', '1 Day']
 }
 
+sector_map = {
+    'XLC': 'Communications (XLC)',
+    'XLY': 'Consumer Discretionary (XLY)',
+    'XLP': 'Consumer Staple (XLP)',
+    'XLE': 'Energy (XLE)',
+    'XLF': 'Financial (XLF)',
+    'XLV': 'Healthcare (XLV)',
+    'XLI': 'Industrial (XLI)',
+    'XLB': 'Materials (XLB)',
+    'XLRE': 'Real Estate (XLRE)',
+    'XLK': 'Technology (XLK)',
+    'XLU': 'Utilities (XLU)'
+}
+
+market_map = {
+    '^GSPC': 'S&P 500',
+    '^IXIC': 'NASDAQ',
+    '^RUT': 'Russell 2000',
+    '^GSPTSE': 'S&P/TSX Composite',
+    '^VIX': 'Volatility Index',
+    'GC=F': 'Gold Price Index',
+    'DX-Y.NYB': 'US Dollar Index',
+    '^XDC': 'CA Dollar Index',
+    '^FVX': '5 Year US Treasury Yield',
+    '^TYX': '30 Year US Treasury Yield'
+}
+
 ticker_df = pd.read_csv("total_tickers.csv")

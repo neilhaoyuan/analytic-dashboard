@@ -93,8 +93,8 @@ def get_sector_info(ticker_list):
     return df
 
 # Get summary table
-def get_summary_table(ticker_list, shares_dict, period, interval):
-    if not ticker_list or not shares_dict:
+def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
+    if (not ticker_list or not shares_dict) and port_page:
         return pd.DataFrame()
     
     summary_table = []
@@ -102,7 +102,7 @@ def get_summary_table(ticker_list, shares_dict, period, interval):
 
     for ticker in ticker_list:
         ohlc_data = get_ohlc_data(ticker, period, interval)
-            
+        
         volume = ohlc_data['Volume'].iloc[-1]
         initial_price = ohlc_data['Close'].iloc[0]
         current_price = ohlc_data['Close'].iloc[-1]
@@ -110,34 +110,47 @@ def get_summary_table(ticker_list, shares_dict, period, interval):
         daily_returns = ohlc_data['Close'].pct_change().dropna()
         std_dev = daily_returns.std() * 100
 
-        num_shares = shares_dict.get(ticker)
-        value = current_price * num_shares
-        total_value += value
+        if port_page:
+            num_shares = shares_dict.get(ticker)
+            value = current_price * num_shares
+            total_value += value
 
-        sector = yf.Ticker(ticker).info.get('sector')
-        sector = "N/A" if sector is None else sector
+            sector = yf.Ticker(ticker).info.get('sector')
+            sector = "N/A" if sector is None else sector
 
-        summary_table.append({
-            'Ticker': ticker,
-            '% Return': return_pct,
-            '% Returns Std Dev': std_dev,
-            'Current Volume': volume, 
-            'Current Price': current_price,
-            'Sector': sector,
-            'Shares': num_shares,
-            'Portfolio Value': value
-        })
+            summary_table.append({
+                'Ticker': ticker,
+                '% Return': return_pct,
+                '% Returns Std Dev': std_dev,
+                'Current Volume': volume, 
+                'Current Price': current_price,
+                'Sector': sector,
+                'Shares': num_shares,
+                'Portfolio Value': value
+            })
 
-    if not summary_table:
-        return pd.DataFrame()
+            if not summary_table:
+                return pd.DataFrame()
 
+            df = pd.DataFrame(summary_table)
+            df['Current Price'] = df['Current Price'].round(2)
+            df['Portfolio Value'] = df['Portfolio Value'].round(2)
+            df['% Return'] = df['% Return'].round(2)
+            df['% Returns Std Dev'] = df['% Returns Std Dev'].round(2)
+            df['% Portfolio Value'] = ((df['Portfolio Value'] / total_value) * 100).round(2)
 
-    df = pd.DataFrame(summary_table)
-    df['Current Price'] = df['Current Price'].round(2)
-    df['Portfolio Value'] = df['Portfolio Value'].round(2)
-    df['% Return'] = df['% Return'].round(2)
-    df['% Returns Std Dev'] = df['% Returns Std Dev'].round(2)
-    df['% Portfolio Value'] = ((df['Portfolio Value'] / total_value) * 100).round(2)
+        else:
+            summary_table.append({
+                'Ticker': ticker,
+                '% Return': return_pct,
+                '% Returns Std Dev': std_dev,
+                'Current Price': current_price,
+            })
+
+            df = pd.DataFrame(summary_table)
+            df['Current Price'] = df['Current Price'].round(2)
+            df['% Return'] = df['% Return'].round(2)
+            df['% Returns Std Dev'] = df['% Returns Std Dev'].round(2)
 
     return df
 
@@ -167,3 +180,30 @@ def create_candlestick_graph(ohlc_df, title):
                      xaxis_rangeslider_visible=False)
     
     return fig
+
+def get_news(ticker_list, article_amnt):
+    if not ticker_list:
+        return pd.DataFrame()
+    
+    news_list = []
+
+    for ticker in ticker_list:
+        try:
+            stock = yf.Ticker(ticker)
+            news = stock.news[:article_amnt]
+
+            for article in news:
+                content = article['content']
+                
+                news_list.append({
+                    'title': content['title'],
+                    'link': content['canonicalUrl']['url'],
+                    'image': content['thumbnail']['originalUrl']
+                })
+        except:
+            continue
+
+    news_df = pd.DataFrame(news_list)
+    news_df = news_df.drop_duplicates(subset=['title'], keep='first')
+    
+    return news_df

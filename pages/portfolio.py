@@ -95,11 +95,30 @@ def update_shares_table(ticker_list):
 )
 def render_tab_content(active_tab):
     if active_tab == 'summary':
-        return dbc.Row([
+        return [
+            dbc.Row([
             #Summary
-            html.Label("Portfolio Summary"),    
-            dbc.Col(html.Div(id='summary-table', style={'height': '50vh'}), width=12)
+            html.Label("Portfolio Summary"),
+
+            dbc.Col(html.Div(id='summary-table', style={'height': '50vh'}), width=12),
+            ]),
+
+            dbc.Row([
+                html.Label("Related News"),
+
+                dbc.Col([
+                    html.Div(
+                        id='news-cards', 
+                        style={
+                            'display': 'flex',
+                            'overflowX': 'scroll',
+                            'overflowY': 'hidden',
+                            'whiteSpace': 'nowrap',
+                            'padding': '10px 0'})
+                    ], width=12),
             ])
+        ]
+    
     elif active_tab == 'charts':
         return [
             # Plotting line, candle
@@ -151,7 +170,7 @@ def get_and_store_data(ticker_list, period, interval):
 )
 def update_line_graph(closes_dict, ticker_list):
     closes_df = pd.DataFrame(closes_dict['data'], index=closes_dict['index'], columns=closes_dict['columns'])
-    closes_df.index = pd.to_datetime(closes_df.index)
+    closes_df.index = pd.to_datetime(closes_df.index, utc=True)
 
     # Create line graph
     fig = px.line(
@@ -329,9 +348,50 @@ def update_summary_table(ticker_list, table_data, period, interval):
         return [], []
     
     shares = table_data[0]
-    summary_df = data.get_summary_table(ticker_list, shares, period, interval)
+    summary_df = data.get_summary_table(ticker_list, shares, period, interval, True)
 
     if summary_df.empty:
         return html.Div()
 
     return dbc.Table.from_dataframe(summary_df, striped=True, bordered=True, hover=True)
+
+@callback(
+        Output('news-cards', 'children'),
+        Input('ticker-input', 'value')
+)
+def update_news_cards(ticker_list):
+    if not ticker_list:
+        return html.Div("Select tickers to see news", className="text-center p-4")
+    
+    news_df = data.get_news(ticker_list, article_amnt=3)
+
+    if news_df.empty:
+        return html.Div("No news available", className="text-center p-4")
+    
+    news_cards = []
+    for i, article in news_df.iterrows():
+        card = dbc.Card(
+            html.A(
+                [
+                    dbc.CardImg(src=article['image']),
+                    dbc.CardBody(html.P(article['title'], 
+                                        className="card-text",
+                                        style={
+                                                'lineHeight': '1.4',
+                                                'whiteSpace': 'normal',
+                                                'wordBreak': 'break-word',
+                                                'overflowWrap': 'break-word',})),
+                ],
+                href=article['link'],
+                target='_blank',
+                style={"textDecoration": "none", "color": "inherit"}
+            ), style={                'minWidth': '280px',
+                'maxWidth': '280px',
+                'height': '260px',
+                'marginRight': '15px',
+                'flex': '0 0 auto',
+                'backgroundColor': '#2d2d2d'}
+        )
+        news_cards.append(card)
+    
+    return news_cards

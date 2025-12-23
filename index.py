@@ -3,7 +3,6 @@ from app import app
 import dash
 import dash_bootstrap_components as dbc
 
-
 app.layout = dbc.Container([
     dbc.Navbar(
         dbc.Container([

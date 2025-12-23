@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
 from utils import data
+from utils.config import market_map
 
 dash.register_page(__name__, href='/market')
 
@@ -37,9 +38,9 @@ layout = dbc.Container([
 ], fluid=True)
 
 @callback(
-        Output('sector-interval-select-dropdown', 'options'),
-        Output('sector-interval-select-dropdown', 'value'),
-        Input('sector-period-select-dropdown', 'value')
+        Output('market-interval-select-dropdown', 'options'),
+        Output('market-interval-select-dropdown', 'value'),
+        Input('market-period-select-dropdown', 'value')
 )
 def update_market_interval_options(period):
     # Returns valid intervals and a default
@@ -131,3 +132,14 @@ def update_market_graphs(period, interval):
 
     return smp500, nasdaq, russell2k, smp_tsx, volatility, gold, usd, cad, five_yo, thirty_yo
 
+@callback(
+        Output('market-table', 'children'),
+        Input('market-period-select-dropdown', 'value'),
+        Input('market-interval-select-dropdown', 'value')
+)
+def update_sector_summary(period, interval):
+    summary_df = data.get_summary_table(['^GSPC', '^IXIC', '^RUT', '^GSPTSE', '^VIX', 'GC=F', 'DX-Y.NYB', '^XDC', '^FVX', '^TYX'], None, period, interval, False)
+
+    summary_df['Ticker'] = summary_df['Ticker'].replace(market_map)
+
+    return dbc.Table.from_dataframe(summary_df, striped=True, bordered=True, hover=True)

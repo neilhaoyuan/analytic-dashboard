@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 from utils import data
+from utils.config import sector_map
 
 dash.register_page(__name__, href='/sectors')
 
@@ -38,9 +39,9 @@ layout = dbc.Container([
 ], fluid=True)
 
 @callback(
-        Output('market-interval-select-dropdown', 'options'),
-        Output('market-interval-select-dropdown', 'value'),
-        Input('market-period-select-dropdown', 'value')
+        Output('sector-interval-select-dropdown', 'options'),
+        Output('sector-interval-select-dropdown', 'value'),
+        Input('sector-period-select-dropdown', 'value')
 )
 def update_market_interval_options(period):
     # Returns valid intervals and a default
@@ -172,3 +173,15 @@ def update_index_graphs(period, interval):
         font={'color': 'white'})
 
     return comm, consdisc, consstap, ener, fin, health, indus, mats, reales, tech, util, fig
+
+@callback(
+        Output('sector-table', 'children'),
+        Input('sector-period-select-dropdown', 'value'),
+        Input('sector-interval-select-dropdown', 'value')
+)
+def update_sector_summary(period, interval):
+    summary_df = data.get_summary_table(['XLC', 'XLY', 'XLP', 'XLE', 'XLF', 'XLV', 'XLI', 'XLB', 'XLRE', 'XLK', 'XLU'], None, period, interval, False)
+
+    summary_df['Ticker'] = summary_df['Ticker'].replace(sector_map)
+
+    return dbc.Table.from_dataframe(summary_df, striped=True, bordered=True, hover=True)
