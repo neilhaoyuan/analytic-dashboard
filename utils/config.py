@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 period_map = {
     '10 Years': '10y', '5 Years': '5y', '2 Years': '2y', '1 Year': '1y',
@@ -53,4 +54,5 @@ market_map = {
     '^TYX': '30 Year US Treasury Yield'
 }
 
-ticker_df = pd.read_csv("total_tickers.csv")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ticker_df = pd.read_csv(os.path.join(BASE_DIR, "total_tickers.csv"))
