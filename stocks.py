@@ -1,6 +1,5 @@
 import pandas as pd
 import requests
-import io
 
 def scrape_us_tickers():
     nasdaq_url = "https://www.nasdaqtrader.com/dynamic/symdir/nasdaqlisted.txt"

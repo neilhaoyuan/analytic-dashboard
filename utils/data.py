@@ -1,8 +1,6 @@
 import yfinance as yf
 import pandas as pd
-import numpy as np 
 import plotly.graph_objects as go
-import numpy_financial as npf
 from utils.config import period_map, interval_map, valid_intervals_map
 
 def get_valid_interval(period):
