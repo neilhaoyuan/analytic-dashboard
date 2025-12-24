@@ -2,6 +2,8 @@
 
 A Data Visualization project with Dash. 
 
+<img width="959" height="599" alt="Image" src="https://github.com/user-attachments/assets/f667bb9b-d0e2-4283-8a27-04b4c12e08d2" />
+
 ## Description
 
 A real-time stock market analytics dashboard built with Dash, Plotly, yFinance, and Pandas. Features portfolio tracking, broad market indices analysis, and sector performance visualization. Allows for dynamic user selection of trading period and intervals, and displays quick and readable summary metrics and related news stories.
@@ -33,6 +35,8 @@ A real-time stock market analytics dashboard built with Dash, Plotly, yFinance, 
 - Flexible intervals: 5 Minutes to 3 Months
 - Scrollable data tables with conditional formatting
 - Daily updating news pertaining to related stocks/indices/sectors
+
+<img width="959" height="599" alt="Image" src="https://github.com/user-attachments/assets/d800c4d5-bc54-4d5c-ad0c-761f96ba7626" />
 
 ## Usage Instructions
 1. Clone the repository
