@@ -58,16 +58,16 @@ python index.py
 5. Use the dashboard
 
 ## Configuration
-**Time Periods**
-\n Available periods: 1 Day, 5 Days, 1 Month, 3 Months, 6 Months, Year To Date, 1 Year, 2 Years, 5 Years, 10 Years
+**Time Periods**  
+Available periods: 1 Day, 5 Days, 1 Month, 3 Months, 6 Months, Year To Date, 1 Year, 2 Years, 5 Years, 10 Years
 
-**Intervals**
-\n Available intervals vary by period:
+**Intervals**  
+Available intervals vary by period:
 - Intraday: 5 Minutes, 15 Minutes, 30 Minutes, 1 Hour, 1.5 Hours
 - Daily and longer: 1 Day, 5 Days, 1 Week, 1 Month, 3 Months
 
-**Data Sources**
-\n This dashboard uses yfinance to fetch real-time stock market data from Yahoo Finance, due to that it can not be deployed. 
+**Data Sources**  
+This dashboard uses yfinance to fetch real-time stock market data from Yahoo Finance, due to that it can not be deployed. 
 
 The list of available trackable tickers in the Portfolio dropdown menu come from scraping the NASDAQ and TSX. Check out stocks.py for more details. 
 
