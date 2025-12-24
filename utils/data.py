@@ -2,14 +2,6 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from utils.config import period_map, interval_map, valid_intervals_map
-import requests
-
-session = requests.Session()
-session.headers.update({
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
-})
 
 def get_valid_interval(period):
     return valid_intervals_map[period]
