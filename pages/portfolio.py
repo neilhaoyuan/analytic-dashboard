@@ -359,7 +359,61 @@ def update_summary_table(ticker_list, table_data, period, interval):
     if summary_df.empty:
         return html.Div()
 
-    return dbc.Table.from_dataframe(summary_df, striped=True, bordered=True, hover=True)
+    fig = dash_table.DataTable(
+        data = summary_df.to_dict('records'),
+        columns = [{'name': i, 'id': i} for i in summary_df.columns],
+        style_table={'overflowX': 'scroll'},
+        style_cell={
+            'textAlign': 'left',
+            'padding': '10px',
+            'backgroundColor': '#1e1e1e',
+            'color': 'white',
+            'border': '1px solid #2d2d2d'},
+        style_header={
+            'backgroundColor': '#2d2d2d',
+            'fontWeight': 'bold',
+            'border': '1px solid #3d3d3d',
+            'textAlign': 'left'},
+        style_data_conditional=[
+            {
+                'if': {
+                    'filter_query': '{% Return} < 0',
+                    'column_id': '% Return'
+                },
+                'color': 'red'
+            },
+            {
+                'if': {
+                    'filter_query': '{% Return} > 0',
+                    'column_id': '% Return'
+                },
+                'color': 'green'
+            },
+            {
+                'if': {
+                    'filter_query': '{Average % Return} < 0',
+                    'column_id': 'Average % Return'
+                },
+                'color': 'red'
+            },
+            {
+                'if': {
+                    'filter_query': '{Average % Return} > 0',
+                    'column_id': 'Average % Return'
+                },
+                'color': 'green'
+            },
+            {
+                'if': {
+                    'filter_query': '{Average % Return} > 0',
+                    'column_id': 'Average % Return'
+                },
+                'color': 'green'
+            }
+        ]
+    )
+
+    return fig
 
 @callback(
         Output('news-cards', 'children'),

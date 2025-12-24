@@ -68,3 +68,12 @@ body{
     margin-left: 270px;
     padding: 32px;
 }
+
+/* DataTable */
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td.focused {
+    background-color: rgba(45, 45, 45, 0.8) !important;  
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td.focused::after {
+    border-color: #4a4a4a !important;  
+}
