@@ -3,6 +3,8 @@ from app import app
 import dash
 import dash_bootstrap_components as dbc
 
+server = app.server
+
 sidebar = html.Div(
     [
         html.H2("Market Analysis Dashboard", className="sidebar-title"),
