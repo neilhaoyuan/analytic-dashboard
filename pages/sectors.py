@@ -143,8 +143,8 @@ def update_index_graphs(period, interval):
     util_data = data.get_ohlc_data('XLU', period, interval)
 
     comm = data.create_candlestick_graph(comm_data, 'Communications (XLC)')
-    consdisc = data.create_candlestick_graph(consdisc_data, 'Consumer Discretionary (XLY)')
-    consstap = data.create_candlestick_graph(consstap_data, 'Consumer Staple (XLP)')
+    consdisc = data.create_candlestick_graph(consdisc_data, 'Cons Disc (XLY)')
+    consstap = data.create_candlestick_graph(consstap_data, 'Cons Staple (XLP)')
     ener = data.create_candlestick_graph(ener_data, 'Energy (XLE)')
     fin = data.create_candlestick_graph(fin_data, 'Financial (XLF)')
     health = data.create_candlestick_graph(health_data, 'Healthcare (XLV)')
