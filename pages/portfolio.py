@@ -15,7 +15,7 @@ layout = dbc.Container([
 
     html.H2("Portfolio Analysis"),
 
-    # Controls
+    # Portfolio stock dropdown, pulls from dataframe of scraped tickers
     dbc.Row([
         dbc.Col([
             html.Label("Select Tickers"),
@@ -27,6 +27,7 @@ layout = dbc.Container([
         ], width=12)
     ], className='mb-3'),
 
+    # Produces datatable where user can input stock shares bought
     dbc.Row([
         dbc.Col([
             html.Label("Shares Per Stock"),
@@ -40,6 +41,7 @@ layout = dbc.Container([
                                           'color' : 'white'})], width=12)
     ], className='mb-3'),
 
+    # Interval and period selection dropdown controls
     dbc.Row([
         dbc.Col([
             html.Label("Select Period"),
@@ -54,12 +56,13 @@ layout = dbc.Container([
                         id='interval-select-dropdown', value='1 Day', multi=False)], width=6)
     ], className='mb-4'),
 
-    # Creating tabs 
+    # Tabs that allow user to switch between showing the charts and the summary page
     dbc.Tabs([
         dbc.Tab(label='Charts', tab_id='charts'),
         dbc.Tab(label='Summary', tab_id='summary')
     ], id='portfolio-tabs'),
     
+    # A horizontally scrollable element that shows news content
     dbc.Spinner([
         html.Div(id="tab-content", className="p-4"),
         ],delay_show=100),
@@ -70,8 +73,8 @@ layout = dbc.Container([
         Output('interval-select-dropdown', 'value'),
         Input('period-select-dropdown', 'value')
 )
+# Returns valid intervals and a default interval based on the user selected period
 def update_interval_options(period):
-    # Returns valid intervals and a default
     valid_interval = data.get_valid_interval(period)
     default_interval = valid_interval[0]
     return valid_interval, default_interval
@@ -81,6 +84,7 @@ def update_interval_options(period):
         Output('shares-table', 'data'),
         Input('ticker-input', 'value')
 )
+# Callback that updates the share table with any newly inputted shares, this relcalculates many things 
 def update_shares_table(ticker_list):
     
     # No tickers selected
@@ -97,11 +101,13 @@ def update_shares_table(ticker_list):
         Output('tab-content', 'children'),
         Input('portfolio-tabs', 'active_tab')
 )
+# Determines which tab the user selected to be in, i.e. charts or summary tab, and displays corresponding information
 def render_tab_content(active_tab):
+
+    # If the selected tab is the summary tab, display the summary table and related news articles
     if active_tab == 'summary':
         return [
             dbc.Row([
-            #Summary
             html.Label("Portfolio Summary*"),
 
             dbc.Col(html.Div(id='summary-table'), width=12),
@@ -125,6 +131,7 @@ def render_tab_content(active_tab):
             ], className='mb-3')
         ]
     
+    # If the selected tab is the charts tab, display all  figures
     elif active_tab == 'charts':
         return [
             # Plotting line, cumulative returns
@@ -159,6 +166,7 @@ def render_tab_content(active_tab):
         Input('period-select-dropdown', 'value'),
         Input('interval-select-dropdown', 'value')
 )
+# Callback that gets and stores the close data of the user chosen ticker list, used to prevent having to do yFinance calls multiple times
 def get_and_store_data(ticker_list, period, interval):
     closes_df = data.get_close_data(ticker_list, period, interval)
     closes_dict = closes_df.to_dict('split')
@@ -174,6 +182,7 @@ def get_and_store_data(ticker_list, period, interval):
         Input('close-data-storage', 'data'),
         Input('ticker-input', 'value')
 )
+# Callback that plots the line graph against government close or end
 def update_line_graph(closes_dict, ticker_list):
     closes_df = pd.DataFrame(closes_dict['data'], index=closes_dict['index'], columns=closes_dict['columns'])
     closes_df.index = pd.to_datetime(closes_df.index, utc=True)
@@ -206,6 +215,7 @@ def update_line_graph(closes_dict, ticker_list):
     Input('period-select-dropdown', 'value'),
     Input('interval-select-dropdown', 'value')
 )
+# Callback that generates a candlestick graph
 def update_candlestick(ticker, period, interval):
 
     # Empty ticker, no figure generated
@@ -222,6 +232,7 @@ def update_candlestick(ticker, period, interval):
         Input('close-data-storage', 'data'),
         Input('shares-table', 'data')
 )
+# Callback that builds the cumulative returns graph
 def update_cumulative_returns(closes_dict, table_data):
     closes_df = pd.DataFrame(closes_dict['data'], index=closes_dict['index'], columns=closes_dict['columns'])
     closes_df.index = pd.to_datetime(closes_df.index, utc=True)
@@ -232,6 +243,7 @@ def update_cumulative_returns(closes_dict, table_data):
     if returns_df.empty:
         return go.Figure()
     
+    # Builds figure with trace to add dimension
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=returns_df.index,
@@ -255,6 +267,7 @@ def update_cumulative_returns(closes_dict, table_data):
     Input('period-select-dropdown', 'value'),
     Input('interval-select-dropdown', 'value')
 )
+# Callback that builds and updates a ticker's volume graph
 def update_volume_graph(ticker, period, interval):
     volume = data.get_volume_data(ticker, period, interval)
 
@@ -275,6 +288,7 @@ def update_volume_graph(ticker, period, interval):
     Input('close-data-storage', 'data'),
     Input('ticker-input', 'value'),
 )
+# Callback that builds the correlation heatmap, only works if tickers amount > 2
 def update_heatmap(closes_dict, ticker_list):
 
     # Empty or not enough tickers
@@ -285,6 +299,7 @@ def update_heatmap(closes_dict, ticker_list):
     closes_df.index = pd.to_datetime(closes_df.index, utc=True)
     closes_df.index = closes_df.index.tz_localize(None)
 
+    # Finds correlation matrix
     weekly_close = data.get_weekly_close(closes_df)
     corr_matrix = data.get_correlation_data(weekly_close)
 
@@ -309,17 +324,18 @@ def update_heatmap(closes_dict, ticker_list):
     Output('sector-graph', 'figure'),
     Input('ticker-input', 'value'),
 )
+# Determines sector breakdown of a portfolio
 def update_sector_graph(ticker_list):
     if not ticker_list:
         return go.Figure()
     
     sector_df = data.get_sector_info(ticker_list)
-    sector_counts = sector_df.groupby('Sector').size().reset_index(name='Count')
 
+    # Creates a dataframe that consists of: Sectors, Count of that sector, Companies in that sector
+    sector_counts = sector_df.groupby('Sector').size().reset_index(name='Count')
     sector_companies = sector_df.groupby('Sector')['Ticker'].agg(', '.join).reset_index()
     sector_companies.columns = ['Sector', 'Companies']
     sector_data = sector_counts.merge(sector_companies, on='Sector')
-
 
     fig = go.Figure(data=[go.Pie(
         labels=sector_data['Sector'],
@@ -347,6 +363,7 @@ def update_sector_graph(ticker_list):
         Input('period-select-dropdown', 'value'),
         Input('interval-select-dropdown', 'value')
 )
+# Callback that updates the portfolio summary table using data from the user-selected period and intervals
 def update_summary_table(ticker_list, table_data, period, interval):
     
     # No tickers selected
@@ -359,6 +376,7 @@ def update_summary_table(ticker_list, table_data, period, interval):
     if summary_df.empty:
         return html.Div()
 
+    # Builds dashtable, ensures that positive return metrics are colored green, and negative metrics are colored red
     fig = dash_table.DataTable(
         data = summary_df.to_dict('records'),
         columns = [{'name': i, 'id': i} for i in summary_df.columns],
@@ -419,6 +437,7 @@ def update_summary_table(ticker_list, table_data, period, interval):
         Output('news-cards', 'children'),
         Input('ticker-input', 'value')
 )
+# Callback that builds the news cards of all the portfolio tickers
 def update_news_cards(ticker_list):
     if not ticker_list:
         return html.Div("Select tickers to see news", className="text-center p-4")

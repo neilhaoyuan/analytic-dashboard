@@ -9,7 +9,7 @@ dash.register_page(__name__, href='/market')
 layout = dbc.Container([
     html.H2("Broad Market Analysis"),
 
-    # Controls
+    # Interval and period selection dropdown controls
     dbc.Row([
         dbc.Col([
             html.Label("Select Period"),
@@ -24,12 +24,13 @@ layout = dbc.Container([
                         id='market-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
     ], className='mb-4'),
 
-    # Creating tabs 
+    # Tabs that allow user to switch between showing the charts and the summary page
     dbc.Tabs([
         dbc.Tab(label='Charts', tab_id='market-charts'),
         dbc.Tab(label='Summary', tab_id='market-summary')
     ], id='market-tabs'),
     
+    # A horizontally scrollable element that shows news content
     dbc.Spinner([
         html.Div(id="market-content", className="p-4"),
         ],delay_show=100),
@@ -40,8 +41,8 @@ layout = dbc.Container([
         Output('market-interval-select-dropdown', 'value'),
         Input('market-period-select-dropdown', 'value')
 )
+# Returns valid intervals and a default interval based on the user selected period
 def update_market_interval_options(period):
-    # Returns valid intervals and a default
     valid_interval = data.get_valid_interval(period)
     default_interval = valid_interval[0]
     return valid_interval, default_interval
@@ -50,11 +51,13 @@ def update_market_interval_options(period):
         Output('market-content', 'children'),
         Input('market-tabs', 'active_tab')
 )
+# Determines which tab the user selected to be in, i.e. charts or summary tab, and displays corresponding information
 def render_market_content(active_tab):
+
+    # If the selected tab is the summary tab, display the summary table and related news articles
     if active_tab == 'market-summary':
         return [
             dbc.Row([
-            #Summary
             html.Label("Market Summary"),    
             dbc.Col(html.Div(id='market-table'), width=12)
             ], className='mb-5'),
@@ -74,6 +77,8 @@ def render_market_content(active_tab):
                     ], width=12),
             ],className='mb-3')
         ]
+    
+    # If the selected tab is the charts tab, display all available market charts
     elif active_tab == 'market-charts':
         return [
             dbc.Row([
@@ -122,6 +127,7 @@ def render_market_content(active_tab):
         Input('market-period-select-dropdown', 'value'),
         Input('market-interval-select-dropdown', 'value')
 )
+# Callback that updates the market graphs depending on what the user selects as period and interval, returns the chart figures
 def update_market_graphs(period, interval):
     smp500_data = data.get_ohlc_data("^GSPC", period, interval)
     nasdaq_data = data.get_ohlc_data("^IXIC", period, interval)
@@ -152,11 +158,13 @@ def update_market_graphs(period, interval):
         Input('market-period-select-dropdown', 'value'),
         Input('market-interval-select-dropdown', 'value')
 )
+# Callback that updates the market summary table using data from the user-selected period and intervals
 def update_sector_summary(period, interval):
     summary_df = data.get_summary_table(['^GSPC', '^IXIC', '^RUT', '^GSPTSE', '^VIX', 'GC=F', 'DX-Y.NYB', '^XDC', '^FVX', '^TYX'], None, period, interval, False)
 
     summary_df['Ticker'] = summary_df['Ticker'].replace(market_map)
 
+    # Builds dashtable, ensures that positive return metrics are colored green, and negative metrics are colored red
     fig = dash_table.DataTable(
         data = summary_df.to_dict('records'),
         columns = [{'name': i, 'id': i} for i in summary_df.columns],
@@ -218,6 +226,7 @@ def update_sector_summary(period, interval):
         Input('market-period-select-dropdown', 'value'),
         Input('market-interval-select-dropdown', 'value')
 )
+# Callback that builds the news cards of all the market indices 
 def update_market_news_cards(period, interval):    
     news_df = data.get_news(['^GSPC', '^IXIC', '^RUT', '^GSPTSE', '^VIX', 'GC=F', 'DX-Y.NYB', '^XDC', '^FVX', '^TYX'], 1)
     

@@ -6,7 +6,7 @@ from utils.config import period_map, interval_map, valid_intervals_map
 def get_valid_interval(period):
     return valid_intervals_map[period]
 
-# Gets Open, High, Low, Close and Volume data
+# Gets Open, High, Low, Close and Volume data for a single ticker
 def get_ohlc_data(ticker, period, interval):
     df = yf.Ticker(ticker).history(
         period=period_map[period],
@@ -14,6 +14,7 @@ def get_ohlc_data(ticker, period, interval):
     )
     return df
 
+# Gets close data for a list of tickers 
 def get_close_data(ticker_list, period, interval):
     if not ticker_list:
         return pd.DataFrame()
@@ -33,7 +34,7 @@ def get_close_data(ticker_list, period, interval):
 
     return df
 
-# Used for std, cor, etc
+# Used for std, cor, etc, gets weekly close prices 
 def get_weekly_close(close_df):
     close_df2 = close_df.copy()
     close_df2["Week"] = close_df2.index.to_period("W")
@@ -42,13 +43,13 @@ def get_weekly_close(close_df):
 
     return weekly_close
 
-# Correlation matrix
+# Finds correlation matrix of weekly closes
 def get_correlation_data(weekly_close):
     weekly_pct = weekly_close.pct_change().dropna()
     corr_matrix = weekly_pct.corr()
     return corr_matrix
 
-# Get cumulative returns
+# Finds the cumulative returns of a dataframe of close prices
 def get_cumulative_returns(closes_df, shares_dict):
     if closes_df.empty or not shares_dict:
         return pd.DataFrame()
@@ -63,7 +64,7 @@ def get_cumulative_returns(closes_df, shares_dict):
         'Portfolio Value': portfolio_value,
         'Cumulative Return (%)': cumulative_return_pct})
 
-# Get volume data
+# Gets volume data of a single ticker
 def get_volume_data(ticker, period, interval):
     if ticker == None:
         return pd.DataFrame
@@ -72,7 +73,7 @@ def get_volume_data(ticker, period, interval):
     
     return volume.dropna()
 
-# Get sector information
+# Gets the sectors of a list of tickers
 def get_sector_info(ticker_list):
     if not ticker_list:
         return pd.DataFrame()
@@ -90,7 +91,7 @@ def get_sector_info(ticker_list):
     
     return df
 
-# Get summary table
+# Builds a summary table dataframe of a list of tickers
 def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
     if (not ticker_list or not shares_dict) and port_page:
         return pd.DataFrame()
@@ -99,8 +100,10 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
     total_value = 0
 
     for ticker in ticker_list:
+        # Get OHLC data for each ticker
         ohlc_data = get_ohlc_data(ticker, period, interval)
         
+        # Calculate metrics
         volume = ohlc_data['Volume'].iloc[-1]
         initial_price = ohlc_data.dropna()['Close'].iloc[0]
         current_price = ohlc_data.dropna()['Close'].iloc[-1]
@@ -116,6 +119,7 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
         drawdown = (cum_return - cum_max) / cum_max * 100
         max_drawdown = drawdown.min()
 
+        # If this is for the portfolio page we include some extra metrics
         if port_page:
             num_shares = shares_dict.get(ticker)
             value = current_price * num_shares
@@ -151,6 +155,7 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
             df['Sharpe Ratio'] = df['Sharpe Ratio'].round(2)
             df['Max Drawdown %'] = df['Max Drawdown %'].round(2)
 
+        # If this not for the portfolio page, i.e. for sector or market pages, we don't include the extra metrics
         else:
             summary_table.append({
                 'Ticker': ticker,
@@ -172,19 +177,23 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
 
     return df
 
+# Function that creates a basic candlestick figure
 def create_candlestick_graph(ohlc_df, title):
     # Empty ticker, no figure generated
     if ohlc_df.empty:
         return go.Figure()
 
+    # Get data
     initial_price = ohlc_df.dropna()["Close"].iloc[0]
     current_price = ohlc_df.dropna()["Close"].iloc[-1]
     pct_change = ((current_price - initial_price) / initial_price) * 100
     
+    # Builds a colored percent change label
     color = 'green' if pct_change >= 0 else 'red'
     sign = '+' if pct_change >= 0 else ''
     pct_label = f"{title} <span style='color:{color}'>{sign}{pct_change:.2f}%</span>"
 
+    # Build figure
     fig = go.Figure(go.Candlestick(
         x=ohlc_df.index,
         open=ohlc_df["Open"],
@@ -199,12 +208,14 @@ def create_candlestick_graph(ohlc_df, title):
     
     return fig
 
+# Access a certain amount of recent news related to a list of tickers
 def get_news(ticker_list, article_amnt):
     if not ticker_list:
         return pd.DataFrame()
     
     news_list = []
 
+    # Go through each ticker in a list and find news for each ticker
     for ticker in ticker_list:
         try:
             stock = yf.Ticker(ticker)

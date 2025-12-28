@@ -11,7 +11,7 @@ dash.register_page(__name__, href='/sectors')
 layout = dbc.Container([
     html.H2("Sector Specific Analysis"),
 
-    # Controls
+    # Interval and period selection dropdown controls
     dbc.Row([
         dbc.Col([
             html.Label("Select Period"),
@@ -26,12 +26,13 @@ layout = dbc.Container([
                         id='sector-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
     ], className='mb-4'),
 
-    # Creating tabs 
+    # Tabs that allow user to switch between showing the charts and the summary page
     dbc.Tabs([
         dbc.Tab(label='Charts', tab_id='sector-charts'),
         dbc.Tab(label='Summary', tab_id='sector-summary')
     ], id='sector-tabs'),
     
+    # A horizontally scrollable element that shows news content
     dbc.Spinner([
         html.Div(id="sector-content", className="p-4"),
         ],delay_show=100),
@@ -42,8 +43,8 @@ layout = dbc.Container([
         Output('sector-interval-select-dropdown', 'value'),
         Input('sector-period-select-dropdown', 'value')
 )
+# Returns valid intervals and a default interval based on the user selected period
 def update_market_interval_options(period):
-    # Returns valid intervals and a default
     valid_interval = data.get_valid_interval(period)
     default_interval = valid_interval[0]
     return valid_interval, default_interval
@@ -52,11 +53,13 @@ def update_market_interval_options(period):
         Output('sector-content', 'children'),
         Input('sector-tabs', 'active_tab')
 )
+# Determines which tab the user selected to be in, i.e. charts or summary tab, and displays corresponding information
 def render_tab_content(active_tab):
+
+    # If the selected tab is the summary tab, display the summary table and related news articles
     if active_tab == 'sector-summary':
         return [
             dbc.Row([
-            #Summary
             html.Label("Sector Summary"),    
             dbc.Col(html.Div(id='sector-table'), width=12)
             ], className='mb-5'),
@@ -76,6 +79,8 @@ def render_tab_content(active_tab):
                     ], width=12),
             ], className='mb-3')
         ]
+    
+    # If the selected tab is the charts tab, display all available sector charts
     elif active_tab == 'sector-charts':
         return [
             dbc.Row([
@@ -129,6 +134,7 @@ def render_tab_content(active_tab):
         Input('sector-period-select-dropdown', 'value'),
         Input('sector-interval-select-dropdown', 'value')
 )
+# Callback that updates the market graphs depending on what the user selects as period and interval, returns the chart figures
 def update_index_graphs(period, interval):
     comm_data = data.get_ohlc_data('XLC', period, interval)
     consdisc_data = data.get_ohlc_data('XLY', period, interval)
@@ -142,6 +148,7 @@ def update_index_graphs(period, interval):
     tech_data = data.get_ohlc_data('XLK', period, interval)
     util_data = data.get_ohlc_data('XLU', period, interval)
 
+    # Builds individual candlestick charts
     comm = data.create_candlestick_graph(comm_data, 'Communications (XLC)')
     consdisc = data.create_candlestick_graph(consdisc_data, 'Cons Disc (XLY)')
     consstap = data.create_candlestick_graph(consstap_data, 'Cons Staple (XLP)')
@@ -154,6 +161,7 @@ def update_index_graphs(period, interval):
     tech = data.create_candlestick_graph(tech_data, 'Technology (XLK)')
     util = data.create_candlestick_graph(util_data, 'Utilities (XLU)')
 
+    # Dataframe of all sector closes used for weekly calculatiions
     sectors_df = pd.DataFrame({
         'Comms': comm_data['Close'],
         'Cons Disc': consdisc_data['Close'],
@@ -168,9 +176,11 @@ def update_index_graphs(period, interval):
         'Utilities': util_data['Close']
     }).dropna()
 
+    # Calculate weekly closes and then correlation matrix 
     sectors_weekly_close = data.get_weekly_close(sectors_df)
     sectors_corr_matrix = data.get_correlation_data(sectors_weekly_close)
 
+    # Build correlation matrix heatmap
     fig = go.Figure(data=go.Heatmap(
         x=sectors_corr_matrix.columns,
         y=sectors_corr_matrix.index,
@@ -195,11 +205,13 @@ def update_index_graphs(period, interval):
         Input('sector-period-select-dropdown', 'value'),
         Input('sector-interval-select-dropdown', 'value')
 )
+# Callback that updates the sector summary table using data from the user-selected period and intervals
 def update_sector_summary(period, interval):
     summary_df = data.get_summary_table(['XLC', 'XLY', 'XLP', 'XLE', 'XLF', 'XLV', 'XLI', 'XLB', 'XLRE', 'XLK', 'XLU'], None, period, interval, False)
     
     summary_df['Ticker'] = summary_df['Ticker'].replace(sector_map)
 
+    # Builds dashtable, ensures that positive return metrics are colored green, and negative metrics are colored red
     fig = dash_table.DataTable(
         data = summary_df.to_dict('records'),
         columns = [{'name': i, 'id': i} for i in summary_df.columns],
@@ -261,6 +273,7 @@ def update_sector_summary(period, interval):
         Input('sector-period-select-dropdown', 'value'),
         Input('sector-interval-select-dropdown', 'value')
 )
+# Callback that builds the news cards of all the sector indices 
 def update_sector_news_cards(period, interval):    
     news_df = data.get_news(['XLC', 'XLY', 'XLP', 'XLE', 'XLF', 'XLV', 'XLI', 'XLB', 'XLRE', 'XLK', 'XLU'], 1)
     
