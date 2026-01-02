@@ -2,12 +2,16 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from utils.config import period_map, interval_map, valid_intervals_map
+from app import cache
+import time
 
 def get_valid_interval(period):
     return valid_intervals_map[period]
 
 # Gets Open, High, Low, Close and Volume data for a single ticker
+@cache.memoize(timeout=900)
 def get_ohlc_data(ticker, period, interval):
+    time.sleep(0.3)
     df = yf.Ticker(ticker).history(
         period=period_map[period],
         interval=interval_map[interval]
@@ -74,6 +78,7 @@ def get_volume_data(ticker, period, interval):
     return volume.dropna()
 
 # Gets the sectors of a list of tickers
+@cache.memoize(timeout=900)
 def get_sector_info(ticker_list):
     if not ticker_list:
         return pd.DataFrame()
@@ -81,6 +86,7 @@ def get_sector_info(ticker_list):
     sector_data = []
     
     for ticker in ticker_list:
+        time.sleep(0.3)
         sector = yf.Ticker(ticker).info.get('sector')
         sector = "N/A" if sector is None else sector
         sector_data.append({
@@ -209,6 +215,7 @@ def create_candlestick_graph(ohlc_df, title):
     return fig
 
 # Access a certain amount of recent news related to a list of tickers
+@cache.memoize(timeout=900)
 def get_news(ticker_list, article_amnt):
     if not ticker_list:
         return pd.DataFrame()
@@ -218,6 +225,7 @@ def get_news(ticker_list, article_amnt):
     # Go through each ticker in a list and find news for each ticker
     for ticker in ticker_list:
         try:
+            time.sleep(0.3)
             stock = yf.Ticker(ticker)
             news = stock.news[:article_amnt]
 

@@ -452,7 +452,11 @@ def update_news_cards(ticker_list):
         card = dbc.Card(
             html.A(
                 [
-                    dbc.CardImg(src=article['image']),
+                    dbc.CardImg(src=article['image'],
+                                style={
+                                    'height': '150px',
+                                    'width': '100%'
+                                }),
                     dbc.CardBody(html.P(article['title'], 
                                         className="card-text",
                                         style={

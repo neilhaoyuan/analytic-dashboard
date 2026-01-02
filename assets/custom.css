@@ -27,6 +27,10 @@ body{
     color: white !important;
 }
 
+.Select-input > input {
+    color: white !important;
+}
+
 /* Sidebar */
 .sidebar {
     position: fixed;
