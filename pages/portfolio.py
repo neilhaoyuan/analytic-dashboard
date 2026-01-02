@@ -7,9 +7,8 @@ import pandas as pd
 from utils import data
 from utils.config import ticker_df
 
-dash.register_page(__name__, path='/')  
+dash.register_page(__name__, path='/portfolio')  
 
-# App layout
 layout = dbc.Container([
     dcc.Store(id='close-data-storage'),
 

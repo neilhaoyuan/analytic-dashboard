@@ -11,7 +11,8 @@ sidebar = html.Div(
         html.Hr(),
         dbc.Nav(
             [
-                dbc.NavItem(dbc.NavLink("Portfolio", href="/")),
+                dbc.NavItem(dbc.NavLink("Quantitative", href="/")),
+                dbc.NavItem(dbc.NavLink("Portfolio", href="/portfolio")),
                 dbc.NavItem(dbc.NavLink("Market", href="/market")),
                 dbc.NavItem(dbc.NavLink("Sectors", href="/sectors")),
             ],
