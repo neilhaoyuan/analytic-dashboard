@@ -15,7 +15,7 @@ layout = dbc.Container([
             html.Label("Select Period"),
             dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
                         '3 Months', '1 Month', '5 Days', '1 Day'],
-                        id='market-period-select-dropdown', value='1 Year', multi=False, style={'color': 'black'})], width=6),
+                        id='market-period-select-dropdown', value='1 Month', multi=False, style={'color': 'black'})], width=6),
 
         dbc.Col([
             html.Label("Select Interval"),
@@ -39,13 +39,16 @@ layout = dbc.Container([
 @callback(
         Output('market-interval-select-dropdown', 'options'),
         Output('market-interval-select-dropdown', 'value'),
-        Input('market-period-select-dropdown', 'value')
+        Input('market-period-select-dropdown', 'value'),
+        Input('market-interval-select-dropdown', 'value')
 )
 # Returns valid intervals and a default interval based on the user selected period
-def update_market_interval_options(period):
+def update_market_interval_options(period, interval):
     valid_interval = data.get_valid_interval(period)
-    default_interval = valid_interval[0]
-    return valid_interval, default_interval
+    if interval in valid_interval:
+        return valid_interval, interval
+    else:
+        return valid_interval, valid_interval[-1]
 
 @callback(
         Output('market-content', 'children'),

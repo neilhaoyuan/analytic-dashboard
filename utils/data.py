@@ -8,6 +8,12 @@ import time
 def get_valid_interval(period):
     return valid_intervals_map[period]
 
+"""
+
+Data fetching functions
+
+"""
+
 # Gets Open, High, Low, Close and Volume data for a single ticker
 @cache.memoize(timeout=900)
 def get_ohlc_data(ticker, period, interval):
@@ -29,7 +35,7 @@ def get_close_data(ticker_list, period, interval):
     for t in ticker_list:
         df = get_ohlc_data(t, period, interval)
         if not df.empty:
-            closes[t] = df["Close"]
+            closes[t] = df['Close']
 
     if not closes:
         return pd.DataFrame()
@@ -41,9 +47,9 @@ def get_close_data(ticker_list, period, interval):
 # Used for std, cor, etc, gets weekly close prices 
 def get_weekly_close(close_df):
     close_df2 = close_df.copy()
-    close_df2["Week"] = close_df2.index.to_period("W")
-    mask = close_df2["Week"] != close_df2["Week"].shift(-1)
-    weekly_close = close_df2.loc[mask].drop(columns="Week")
+    close_df2['Week'] = close_df2.index.to_period('W')
+    mask = close_df2['Week'] != close_df2['Week'].shift(-1)
+    weekly_close = close_df2.loc[mask].drop(columns='Week')
 
     return weekly_close
 
@@ -96,6 +102,75 @@ def get_sector_info(ticker_list):
     df = pd.DataFrame(sector_data)
     
     return df
+
+# Access a certain amount of recent news related to a list of tickers
+@cache.memoize(timeout=900)
+def get_news(ticker_list, article_amnt):
+    if not ticker_list:
+        return pd.DataFrame()
+    
+    news_list = []
+
+    # Go through each ticker in a list and find news for each ticker
+    for ticker in ticker_list:
+        try:
+            time.sleep(0.3)
+            stock = yf.Ticker(ticker)
+            news = stock.news[:article_amnt]
+
+            for article in news:
+                content = article['content']
+                
+                news_list.append({
+                    'title': content['title'],
+                    'link': content['canonicalUrl']['url'],
+                    'image': content['thumbnail']['originalUrl']
+                })
+        except:
+            continue
+
+    news_df = pd.DataFrame(news_list)
+    news_df = news_df.drop_duplicates(subset=['title'], keep='first')
+    
+    return news_df
+
+
+"""
+
+Figure creation functions
+
+"""
+
+# Function that creates a basic candlestick figure
+def create_candlestick_graph(ohlc_df, title):
+    # Empty ticker, no figure generated
+    if ohlc_df.empty:
+        return go.Figure()
+
+    # Get data
+    initial_price = ohlc_df.dropna()["Close"].iloc[0]
+    current_price = ohlc_df.dropna()["Close"].iloc[-1]
+    pct_change = ((current_price - initial_price) / initial_price) * 100
+    
+    # Builds a colored percent change label
+    color = 'green' if pct_change >= 0 else 'red'
+    sign = '+' if pct_change >= 0 else ''
+    pct_label = f"{title} <span style='color:{color}'>{sign}{pct_change:.2f}%</span>"
+
+    # Build figure
+    fig = go.Figure(go.Candlestick(
+        x=ohlc_df.index,
+        open=ohlc_df["Open"],
+        high=ohlc_df["High"],
+        low=ohlc_df["Low"],
+        close=ohlc_df["Close"],
+    )).update_layout(title=pct_label, 
+                     paper_bgcolor='rgba(0, 0, 0, 0)', 
+                     plot_bgcolor='#1e1e1e', 
+                     font={'color': 'white'},
+                     xaxis_rangeslider_visible=False)
+    
+    return fig
 
 # Builds a summary table dataframe of a list of tickers
 def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
@@ -182,65 +257,3 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
             df['Max Drawdown %'] = df['Max Drawdown %'].round(2)
 
     return df
-
-# Function that creates a basic candlestick figure
-def create_candlestick_graph(ohlc_df, title):
-    # Empty ticker, no figure generated
-    if ohlc_df.empty:
-        return go.Figure()
-
-    # Get data
-    initial_price = ohlc_df.dropna()["Close"].iloc[0]
-    current_price = ohlc_df.dropna()["Close"].iloc[-1]
-    pct_change = ((current_price - initial_price) / initial_price) * 100
-    
-    # Builds a colored percent change label
-    color = 'green' if pct_change >= 0 else 'red'
-    sign = '+' if pct_change >= 0 else ''
-    pct_label = f"{title} <span style='color:{color}'>{sign}{pct_change:.2f}%</span>"
-
-    # Build figure
-    fig = go.Figure(go.Candlestick(
-        x=ohlc_df.index,
-        open=ohlc_df["Open"],
-        high=ohlc_df["High"],
-        low=ohlc_df["Low"],
-        close=ohlc_df["Close"],
-    )).update_layout(title=pct_label, 
-                     paper_bgcolor='rgba(0, 0, 0, 0)', 
-                     plot_bgcolor='#1e1e1e', 
-                     font={'color': 'white'},
-                     xaxis_rangeslider_visible=False)
-    
-    return fig
-
-# Access a certain amount of recent news related to a list of tickers
-@cache.memoize(timeout=900)
-def get_news(ticker_list, article_amnt):
-    if not ticker_list:
-        return pd.DataFrame()
-    
-    news_list = []
-
-    # Go through each ticker in a list and find news for each ticker
-    for ticker in ticker_list:
-        try:
-            time.sleep(0.3)
-            stock = yf.Ticker(ticker)
-            news = stock.news[:article_amnt]
-
-            for article in news:
-                content = article['content']
-                
-                news_list.append({
-                    'title': content['title'],
-                    'link': content['canonicalUrl']['url'],
-                    'image': content['thumbnail']['originalUrl']
-                })
-        except:
-            continue
-
-    news_df = pd.DataFrame(news_list)
-    news_df = news_df.drop_duplicates(subset=['title'], keep='first')
-    
-    return news_df
