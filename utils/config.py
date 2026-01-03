@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import numpy as np
 
 period_map = {
     '10 Years': '10y', '5 Years': '5y', '2 Years': '2y', '1 Year': '1y',
@@ -52,6 +53,19 @@ market_map = {
     '^XDC': 'CA Dollar Index',
     '^FVX': '5 Year US Treasury Yield',
     '^TYX': '30 Year US Treasury Yield'
+}
+
+annualization_factors = {
+    '5 Minutes': np.sqrt(252 * 78),         # 252 Trading Days * 78 5 Min Intervals/Trading Day
+    '15 Minutes': np.sqrt(252 * 26),        # 252 Trading Days * 26 15 Min Intervals/Trading Day
+    '30 Minutes': np.sqrt(252 * 13),        # 252 Trading Days * 13 30 Min Intervals/Trading Day
+    '1 Hour': np.sqrt(252 * 6.5),           # 252 Trading Days * 6.5 1 Hour Intervals/Trading Day
+    '1.5 Hours': np.sqrt(252 * (13/3)),     # 252 Trading Days * 4.33... 1.5 Hour Intervals/Trading Day
+    '1 Day': np.sqrt(252),                  # 252 Trading Days/Year
+    '5 Days': np.sqrt(52),                  # For simplicity sake: Aprox 52 Weeks/Year as 5 days aprox 1 trading week
+    '1 Week': np.sqrt(52),                  # 52 Weeks/Year
+    '1 Month': np.sqrt(12),                 # 12 months/year
+    '3 Months': np.sqrt(4)                  # 4 quarters/year
 }
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

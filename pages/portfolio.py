@@ -17,7 +17,7 @@ layout = dbc.Container([
     # Portfolio stock dropdown, pulls from dataframe of scraped tickers
     dbc.Row([
         dbc.Col([
-            html.Label("Select Tickers"),
+            html.Label("Select Multiple Tickers"),
             dcc.Dropdown(ticker_df["Symbol"], 
                          id='ticker-input', 
                          value=['AAPL', 'GOOGL', 'NVDA'], 
@@ -44,8 +44,7 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.Label("Select Period"),
-            dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
-                        '3 Months', '1 Month', '5 Days', '1 Day'],
+            dcc.Dropdown(['1 Year', 'Year To Date', '6 Months', '3 Months', '1 Month', '5 Days', '1 Day'],
                         id='period-select-dropdown', value='1 Month', multi=False)], width=6),
 
         dbc.Col([

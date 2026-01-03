@@ -13,8 +13,7 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.Label("Select Period"),
-            dcc.Dropdown(['10 Years', '5 Years', '2 Years', '1 Year', 'Year To Date', '6 Months',
-                        '3 Months', '1 Month', '5 Days', '1 Day'],
+            dcc.Dropdown(['1 Year', 'Year To Date', '6 Months', '3 Months', '1 Month', '5 Days', '1 Day'],
                         id='market-period-select-dropdown', value='1 Month', multi=False, style={'color': 'black'})], width=6),
 
         dbc.Col([

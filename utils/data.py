@@ -9,9 +9,7 @@ def get_valid_interval(period):
     return valid_intervals_map[period]
 
 """
-
 Data fetching functions
-
 """
 
 # Gets Open, High, Low, Close and Volume data for a single ticker
@@ -136,9 +134,7 @@ def get_news(ticker_list, article_amnt):
 
 
 """
-
 Figure creation functions
-
 """
 
 # Function that creates a basic candlestick figure
@@ -236,7 +232,7 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
             df['Sharpe Ratio'] = df['Sharpe Ratio'].round(2)
             df['Max Drawdown %'] = df['Max Drawdown %'].round(2)
 
-        # If this not for the portfolio page, i.e. for sector or market pages, we don't include the extra metrics
+        # If this not for the portfolio page, i.e. for analytics or sector or market pages, we don't include the extra metrics
         else:
             summary_table.append({
                 'Ticker': ticker,
