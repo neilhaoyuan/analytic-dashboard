@@ -1,4 +1,5 @@
 import yfinance as yf
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from utils.config import annualization_factors
@@ -44,14 +45,20 @@ def detect_vwap_events(vwap_df):
     same_day = df['Date'] == df['Date'].shift(1)
     valid_cross = cross_zero & same_day
 
-    # Within each day, track if we've extended at any point today so far
+    # Within each day track if we've extended at any point today so far, and then check for VWAP events using extensions and crosses
     has_extended_today = extended.groupby(df['Date']).cummax()
-
-    # At a crossing, check if we had extended earlier today 
     df['VWAP Event'] = valid_cross & has_extended_today.shift(1).fillna(False)
     
-    return df
+    # Track maximum and minimum z score seen so far and then find the maximum extension/distance
+    cummax = df.groupby('Date')['VWAP Z Score'].cummax()
+    cummin = df.groupby('Date')['VWAP Z Score'].cummin()
+    largest = cummax.abs() >= cummin.abs()
+    max_extension = np.where(largest, cummax, cummin)
 
+    # Keep onkly the max extension distance 
+    df['Max Z Distance'] = np.where(df['VWAP Event'], max_extension, None)
+    
+    return df
 
 """
 Volume Profile 
