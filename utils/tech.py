@@ -17,8 +17,15 @@ def get_intraday_vwap(ohlc_df):
     # Calculate typical price (used as it more accurately represents price than just close)
     df['Typical Price'] = (df['High'] + df['Low'] + df['Close']) / 3
 
+    # Remove any existing 'Date' column and clear index name
+    if 'Date' in df.columns:
+        df = df.drop('Date', axis=1)
+    
+    # Clear the index name completely to avoid ambiguity
+    df.index.name = None
+
     # Find specific day, group the cumulative volume based on each day (resets for each cumulaitve)
-    df['Date'] = df.index.date
+    df['Date'] = pd.to_datetime(df.index).date
     df['Cumulative Volume'] = df.groupby('Date')['Volume'].cumsum()
 
     # Calculate VWAP at each price using: Sum of (Typical Price * Volume) / Sum of Volume
@@ -137,7 +144,7 @@ def get_realized_volatility(ohlc_df, interval):
     factor = annualization_factors.get(interval)
     df['Annualized Volatility'] = rolling_std * factor
 
-    return df
+    return df.dropna()
 
 """
 Rolling Beta
@@ -159,4 +166,4 @@ def get_rolling_beta(ohlc_df, benchmark_df):
     rolling_beta = (combined['Stock Returns'].rolling(window).cov(combined['Benchmark Returns']) / 
                     combined['Benchmark Returns'].rolling(window).var())
     
-    return rolling_beta
+    return rolling_beta.dropna()

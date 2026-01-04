@@ -31,4 +31,4 @@ content = html.Div(
 app.layout = html.Div([sidebar, content])
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

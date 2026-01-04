@@ -49,7 +49,7 @@ def update_sector_interval_options(period, interval):
     if interval in valid_interval:
         return valid_interval, interval
     else:
-        return valid_interval, valid_interval[-1]
+        return valid_interval, valid_interval[0]
 
 @callback(
         Output('sector-content', 'children'),

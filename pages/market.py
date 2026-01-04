@@ -47,7 +47,7 @@ def update_market_interval_options(period, interval):
     if interval in valid_interval:
         return valid_interval, interval
     else:
-        return valid_interval, valid_interval[-1]
+        return valid_interval, valid_interval[0]
 
 @callback(
         Output('market-content', 'children'),
