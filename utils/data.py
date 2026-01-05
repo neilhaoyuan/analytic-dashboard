@@ -166,7 +166,7 @@ def create_candlestick_graph(ohlc_df, title):
                      font={'color': 'white'},
                      xaxis_rangeslider_visible=False)
     
-    return fig
+    return remove_market_gaps(fig)
 
 # Builds a summary table dataframe of a list of tickers
 def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
