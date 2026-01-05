@@ -20,7 +20,7 @@ layout = dbc.Container([
             html.Label("Select Multiple Tickers"),
             dcc.Dropdown(ticker_df["Symbol"], 
                          id='ticker-input', 
-                         value=['AAPL', 'GOOGL', 'NVDA'], 
+                         value=[], 
                          placeholder='Select tickers...',
                          multi=True, 
                          style={'backgroundColor': "#28346E", 'color': 'white'},),
@@ -101,7 +101,7 @@ def update_shares_table(ticker_list):
 
 @callback(
         Output('tab-content', 'children'),
-        Input('portfolio-tabs', 'active_tab')
+        Input('portfolio-tabs', 'active_tab'),
 )
 # Determines which tab the user selected to be in, i.e. charts or summary tab, and displays corresponding information
 def render_tab_content(active_tab):
@@ -166,7 +166,8 @@ def render_tab_content(active_tab):
         Output('close-data-storage', 'data'),
         Input('ticker-input', 'value'),
         Input('period-select-dropdown', 'value'),
-        Input('interval-select-dropdown', 'value')
+        Input('interval-select-dropdown', 'value'),
+        prevent_initial_call=True
 )
 # Callback that gets and stores the close data of the user chosen ticker list, used to prevent having to do yFinance calls multiple times
 def get_and_store_data(ticker_list, period, interval):
@@ -325,6 +326,7 @@ def update_heatmap(closes_dict, ticker_list):
 @callback(
     Output('sector-graph', 'figure'),
     Input('ticker-input', 'value'),
+    prevent_initial_call=True
 )
 # Determines sector breakdown of a portfolio
 def update_sector_graph(ticker_list):
@@ -363,7 +365,8 @@ def update_sector_graph(ticker_list):
         Input('ticker-input', 'value'),
         Input('shares-table', 'data'),
         Input('period-select-dropdown', 'value'),
-        Input('interval-select-dropdown', 'value')
+        Input('interval-select-dropdown', 'value'),
+        prevent_initial_call=True
 )
 # Callback that updates the portfolio summary table using data from the user-selected period and intervals
 def update_summary_table(ticker_list, table_data, period, interval):
@@ -437,7 +440,8 @@ def update_summary_table(ticker_list, table_data, period, interval):
 
 @callback(
         Output('news-cards', 'children'),
-        Input('ticker-input', 'value')
+        Input('ticker-input', 'value'),
+        prevent_initial_call=True
 )
 # Callback that builds the news cards of all the portfolio tickers
 def update_news_cards(ticker_list):

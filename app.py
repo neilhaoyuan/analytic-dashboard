@@ -1,15 +1,7 @@
 import dash
 from dash import Dash, html
 import dash_bootstrap_components as dbc
-from flask_caching import Cache
-from flask import Flask
-
-server = Flask(__name__)
-
-cache = Cache(server, config={
-    'CACHE_TYPE': 'simple',
-    'CACHE_DEFAULT_TIMEOUT': 900
-})
+from cache_config import server, cache
 
 app = Dash(__name__, 
            server=server,
@@ -43,4 +35,4 @@ content = html.Div(
 app.layout = html.Div([sidebar, content])
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)

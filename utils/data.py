@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from utils.config import period_map, interval_map, valid_intervals_map
-from app import cache
+from cache_config import cache
 import time
 
 def get_valid_interval(period):
@@ -16,13 +16,23 @@ Data fetching functions
 @cache.memoize(timeout=900)
 def get_ohlc_data(ticker, period, interval):
     time.sleep(0.5)
-    if not ticker or period is None or interval is None:
+    
+    if ticker is None or period is None or interval is None:
         return pd.DataFrame()
     
+    print(f"Fetching: {ticker}, period={period}, interval={interval}")
+    print(f"Mapped: period={period_map[period]}, interval={interval_map[interval]}")
+
     df = yf.Ticker(ticker).history(
         period=period_map[period],
         interval=interval_map[interval]
     )
+
+    if not df.empty:
+        print(f"Date range: {df.index.min()} to {df.index.max()}")  # ADD THIS
+    else:
+        print("Empty dataframe returned!")
+
     return df
 
 # Gets close data for a list of tickers 
@@ -177,7 +187,7 @@ def create_candlestick_graph(ohlc_df, title):
                      font={'color': 'white'},
                      xaxis_rangeslider_visible=False)
     
-    return remove_market_gaps(fig)
+    return fig
 
 # Builds a summary table dataframe of a list of tickers
 def get_summary_table(ticker_list, shares_dict, period, interval, port_page):

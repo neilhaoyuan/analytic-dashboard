@@ -32,7 +32,7 @@ def get_intraday_vwap(ohlc_df):
     # Calculate standard deviation of price from VWAP and the z-score of each price
     df['Deviation'] = df['Close'] - df['VWAP']
     df['VWAP Std'] = df.groupby('Date')['Deviation'].expanding().std().reset_index(level=0, drop=True)
-    df['VWAP Std'] = df['VWAP Std'].fillna(method='bfill')
+    df['VWAP Std'] = df['VWAP Std'].bfill()
     df['VWAP Z Score'] = df['Deviation'] / df['VWAP Std']
 
     return df
@@ -67,7 +67,7 @@ def detect_vwap_events(vwap_df):
         
         # Check if its a valid crossing, if so mark that VWAP event down and reset has_extended
         if valid_cross.loc[i] and has_extended:
-            df['VWAP Event'].loc[i] = True
+            df.loc[i, 'VWAP Event'] = True
             has_extended = False
 
     # Track maximum and minimum z score seen so far and then find the maximum extension/distance

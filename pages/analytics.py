@@ -56,7 +56,7 @@ def render_page(ticker, period, interval):
     Output('rolling-beta', 'figure'),
     Input('ana-ticker-input', 'value'),
     Input('ana-period-select-dropdown', 'value'),
-    Input('ana-interval-select-dropdown', 'value')
+    Input('ana-interval-select-dropdown', 'value'),
 )
 def update_graphs(ticker, period, interval):
     ohlc_df = data.get_ohlc_data(ticker, period, interval)

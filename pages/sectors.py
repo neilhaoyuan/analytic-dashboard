@@ -17,7 +17,7 @@ layout = dbc.Container([
             html.Label("Select Period"),
             dcc.Dropdown(['1 Year', 'Year To Date','6 Months', '3 Months', '1 Month', '5 Days', '1 Day'],
                         id='sector-period-select-dropdown', 
-                        value=None, 
+                        value='1 Year', 
                         placeholder='Select a time period...',
                         multi=False, 
                         style={'color': 'black'})], width=6),
@@ -65,7 +65,7 @@ def update_sector_interval_options(period, interval):
         Output('sector-content', 'children'),
         Input('sector-tabs', 'active_tab'),
         Input('sector-period-select-dropdown', 'value'),
-        Input('sector-interval-select-dropdown', 'value')
+        Input('sector-interval-select-dropdown', 'value'),
 )
 # Determines which tab the user selected to be in, i.e. charts or summary tab, and displays corresponding information
 def render_tab_content(active_tab, period, interval):
@@ -146,10 +146,13 @@ def render_tab_content(active_tab, period, interval):
         Output('util-sector', 'figure'),
         Output('sector-corr-heatmap', 'figure'),
         Input('sector-period-select-dropdown', 'value'),
-        Input('sector-interval-select-dropdown', 'value')
+        Input('sector-interval-select-dropdown', 'value'),
 )
 # Callback that updates the market graphs depending on what the user selects as period and interval, returns the chart figures
 def update_index_graphs(period, interval):
+    if period is None or interval is None:
+        return [go.Figure()] * 12
+
     comm_data = data.get_ohlc_data('XLC', period, interval)
     consdisc_data = data.get_ohlc_data('XLY', period, interval)
     consstap_data = data.get_ohlc_data('XLP', period, interval)
@@ -217,7 +220,8 @@ def update_index_graphs(period, interval):
 @callback(
         Output('sector-table', 'children'),
         Input('sector-period-select-dropdown', 'value'),
-        Input('sector-interval-select-dropdown', 'value')
+        Input('sector-interval-select-dropdown', 'value'),
+        prevent_initial_call=True
 )
 # Callback that updates the sector summary table using data from the user-selected period and intervals
 def update_sector_summary(period, interval):
@@ -285,7 +289,8 @@ def update_sector_summary(period, interval):
 @callback(
         Output('sector-news-cards', 'children'),
         Input('sector-period-select-dropdown', 'value'),
-        Input('sector-interval-select-dropdown', 'value')
+        Input('sector-interval-select-dropdown', 'value'),
+        prevent_initial_call=True
 )
 # Callback that builds the news cards of all the sector indices 
 def update_sector_news_cards(period, interval):    

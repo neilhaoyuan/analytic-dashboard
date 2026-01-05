@@ -3,6 +3,7 @@ from dash import html, dcc, callback, Output, Input, dash_table
 import dash_bootstrap_components as dbc
 from utils import data
 from utils.config import market_map
+import plotly.graph_objects as go
 
 dash.register_page(__name__, href='/market')
 
@@ -15,7 +16,7 @@ layout = dbc.Container([
             html.Label("Select Period"),
             dcc.Dropdown(['1 Year', 'Year To Date', '6 Months', '3 Months', '1 Month', '5 Days', '1 Day'],
                         id='market-period-select-dropdown', 
-                        value=None, 
+                        value='1 Year', 
                         placeholder='Select a time period...',
                         multi=False, 
                         style={'color': 'black'})], width=6),
@@ -47,7 +48,7 @@ layout = dbc.Container([
         Output('market-interval-select-dropdown', 'options'),
         Output('market-interval-select-dropdown', 'value'),
         Input('market-period-select-dropdown', 'value'),
-        Input('market-interval-select-dropdown', 'value')
+        Input('market-interval-select-dropdown', 'value'),
 )
 # Returns valid intervals and a default interval based on the user selected period
 def update_market_interval_options(period, interval):
@@ -63,7 +64,7 @@ def update_market_interval_options(period, interval):
         Output('market-content', 'children'),
         Input('market-tabs', 'active_tab'),
         Input('market-period-select-dropdown', 'value'),
-        Input('market-interval-select-dropdown', 'value')
+        Input('market-interval-select-dropdown', 'value'),
 )
 # Determines which tab the user selected to be in, i.e. charts or summary tab, and displays corresponding information
 def render_market_content(active_tab, period, interval):
@@ -139,10 +140,13 @@ def render_market_content(active_tab, period, interval):
         Output('5y-treasury-yield-graph', 'figure'),
         Output('30y-treasury-yield-graph', 'figure'),
         Input('market-period-select-dropdown', 'value'),
-        Input('market-interval-select-dropdown', 'value')
+        Input('market-interval-select-dropdown', 'value'),
 )
 # Callback that updates the market graphs depending on what the user selects as period and interval, returns the chart figures
 def update_market_graphs(period, interval):
+    if period is None or interval is None:
+        return [go.Figure()] * 10
+
     smp500_data = data.get_ohlc_data("^GSPC", period, interval)
     nasdaq_data = data.get_ohlc_data("^IXIC", period, interval)
     russell2k_data = data.get_ohlc_data("^RUT", period, interval)
@@ -170,7 +174,8 @@ def update_market_graphs(period, interval):
 @callback(
         Output('market-table', 'children'),
         Input('market-period-select-dropdown', 'value'),
-        Input('market-interval-select-dropdown', 'value')
+        Input('market-interval-select-dropdown', 'value'),
+        prevent_initial_call=True
 )
 # Callback that updates the market summary table using data from the user-selected period and intervals
 def update_sector_summary(period, interval):
@@ -238,7 +243,8 @@ def update_sector_summary(period, interval):
 @callback(
         Output('market-news-cards', 'children'),
         Input('market-period-select-dropdown', 'value'),
-        Input('market-interval-select-dropdown', 'value')
+        Input('market-interval-select-dropdown', 'value'),
+        prevent_initial_call=True
 )
 # Callback that builds the news cards of all the market indices 
 def update_market_news_cards(period, interval):    
