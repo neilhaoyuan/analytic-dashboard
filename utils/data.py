@@ -253,3 +253,10 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
             df['Max Drawdown %'] = df['Max Drawdown %'].round(2)
 
     return df
+
+def remove_market_gaps(fig):
+    fig.update_xaxes(rangebreaks=[
+        dict(bounds=["sat", "mon"]),
+        dict(bounds=[16, 9.5], pattern="hour")])
+
+    return fig

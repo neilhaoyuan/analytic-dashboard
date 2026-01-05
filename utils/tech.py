@@ -1,10 +1,6 @@
-import yfinance as yf
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 from utils.config import annualization_factors
-from app import cache
-import time
 
 """
 VWAP Related Functions
@@ -36,6 +32,7 @@ def get_intraday_vwap(ohlc_df):
     # Calculate standard deviation of price from VWAP and the z-score of each price
     df['Deviation'] = df['Close'] - df['VWAP']
     df['VWAP Std'] = df.groupby('Date')['Deviation'].expanding().std().reset_index(level=0, drop=True)
+    df['VWAP Std'] = df['VWAP Std'].fillna(method='bfill')
     df['VWAP Z Score'] = df['Deviation'] / df['VWAP Std']
 
     return df
@@ -44,21 +41,38 @@ def get_intraday_vwap(ohlc_df):
 def detect_vwap_events(vwap_df):
     df = vwap_df.copy()
 
-    # Detect any time z-score extends beyond 1 std away from VWAP, then detect any crossings
-    extended = df['VWAP Z Score'].abs() > 1
+    # Detect any time z-score extends beyond 2 std away from VWAP, then detect any crossings
+    extended = df['VWAP Z Score'].abs() > 2
     cross_zero = (df['VWAP Z Score'].shift(1) * df['VWAP Z Score']) < 0
 
     # Only consider crossings on the same day
     same_day = df['Date'] == df['Date'].shift(1)
     valid_cross = cross_zero & same_day
 
-    # Within each day track if we've extended at any point today so far, and then check for VWAP events using extensions and crosses
-    has_extended_today = extended.groupby(df['Date']).cummax()
-    df['VWAP Event'] = valid_cross & has_extended_today.shift(1).fillna(False)
-    
+    df['VWAP Event'] = False
+    has_extended = False
+    current_date = None
+
+    # Loop through each day to detect snapback events: must have has_extended be true and a valid cross
+    for i in df.index:
+
+        # Reset has_extended on a new day
+        if df['Date'].loc[i] != current_date:
+            has_extended = False
+            current_date = df['Date'].loc[i]
+
+        # Check if extended
+        if extended.loc[i]:
+            has_extended = True
+        
+        # Check if its a valid crossing, if so mark that VWAP event down and reset has_extended
+        if valid_cross.loc[i] and has_extended:
+            df['VWAP Event'].loc[i] = True
+            has_extended = False
+
     # Track maximum and minimum z score seen so far and then find the maximum extension/distance
-    cummax = df.groupby('Date')['VWAP Z Score'].cummax()
-    cummin = df.groupby('Date')['VWAP Z Score'].cummin()
+    cummax = df.groupby('Date', observed=True)['VWAP Z Score'].cummax()
+    cummin = df.groupby('Date', observed=True)['VWAP Z Score'].cummin()
     largest = cummax.abs() >= cummin.abs()
     max_extension = np.where(largest, cummax, cummin)
 

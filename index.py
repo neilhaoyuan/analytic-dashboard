@@ -9,7 +9,7 @@ sidebar = html.Div(
     [
         html.H2("Market Analysis Dashboard", className="sidebar-title"),
         html.Hr(),
-        dbc.Nav(
+        dbc.Nav(    
             [
                 dbc.NavItem(dbc.NavLink("Analytic Charts", href="/")),
                 dbc.NavItem(dbc.NavLink("Stock Portfolio", href="/portfolio")),

@@ -14,13 +14,21 @@ layout = dbc.Container([
         dbc.Col([
             html.Label("Select Period"),
             dcc.Dropdown(['1 Year', 'Year To Date', '6 Months', '3 Months', '1 Month', '5 Days', '1 Day'],
-                        id='market-period-select-dropdown', value='1 Month', multi=False, style={'color': 'black'})], width=6),
+                        id='market-period-select-dropdown', 
+                        value=None, 
+                        placeholder='Select a time period...',
+                        multi=False, 
+                        style={'color': 'black'})], width=6),
 
         dbc.Col([
             html.Label("Select Interval"),
             dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour', '1.5 Hours',
                         '1 Day', '5 Days', '1 Week', '1 Month', '3 Months'],
-                        id='market-interval-select-dropdown', value='1 Day', multi=False, style={'color': 'black'})], width=6)
+                        id='market-interval-select-dropdown', 
+                        value=None, 
+                        placeholder='Select an interval...',
+                        multi=False, 
+                        style={'color': 'black'})], width=6)
     ], className='mb-4'),
 
     # Tabs that allow user to switch between showing the charts and the summary page
@@ -46,15 +54,19 @@ def update_market_interval_options(period, interval):
     valid_interval = data.get_valid_interval(period)
     if interval in valid_interval:
         return valid_interval, interval
+    elif interval is None:
+        return valid_interval, None
     else:
         return valid_interval, valid_interval[0]
 
 @callback(
         Output('market-content', 'children'),
-        Input('market-tabs', 'active_tab')
+        Input('market-tabs', 'active_tab'),
+        Input('market-period-select-dropdown', 'value'),
+        Input('market-interval-select-dropdown', 'value')
 )
 # Determines which tab the user selected to be in, i.e. charts or summary tab, and displays corresponding information
-def render_market_content(active_tab):
+def render_market_content(active_tab, period, interval):
 
     # If the selected tab is the summary tab, display the summary table and related news articles
     if active_tab == 'market-summary':
@@ -81,7 +93,7 @@ def render_market_content(active_tab):
         ]
     
     # If the selected tab is the charts tab, display all available market charts
-    elif active_tab == 'market-charts':
+    elif active_tab == 'market-charts' and not (period is None or interval is None) :
         return [
             dbc.Row([
                 dbc.Col(dcc.Graph(id='smp500-graph', style={'height': '50vh'}), width=6),
@@ -237,7 +249,9 @@ def update_market_news_cards(period, interval):
         card = dbc.Card(
             html.A(
                 [
-                    dbc.CardImg(src=article['image']),
+                    dbc.CardImg(src=article['image'],
+                                style={'height': '150px',
+                                       'width': '100%'}),
                     dbc.CardBody(html.P(article['title'], 
                                         className="card-text",
                                         style={

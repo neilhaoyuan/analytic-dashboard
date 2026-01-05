@@ -21,6 +21,7 @@ layout = dbc.Container([
             dcc.Dropdown(ticker_df["Symbol"], 
                          id='ticker-input', 
                          value=['AAPL', 'GOOGL', 'NVDA'], 
+                         placeholder='Select tickers...',
                          multi=True, 
                          style={'backgroundColor': "#28346E", 'color': 'white'},),
         ], width=12)
@@ -78,7 +79,7 @@ def update_interval_options(period, interval):
     if interval in valid_interval:
         return valid_interval, interval
     else:
-        return valid_interval, valid_interval[-1]
+        return valid_interval, valid_interval[0]
 
 @callback(
         Output('shares-table', 'columns'),
