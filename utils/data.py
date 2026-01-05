@@ -15,7 +15,7 @@ Data fetching functions
 # Gets Open, High, Low, Close and Volume data for a single ticker
 @cache.memoize(timeout=900)
 def get_ohlc_data(ticker, period, interval):
-    time.sleep(0.5)
+    time.sleep(2.0)
     
     if ticker is None or period is None or interval is None:
         return pd.DataFrame()
@@ -110,7 +110,7 @@ def get_sector_info(ticker_list):
     sector_data = []
     
     for ticker in ticker_list:
-        time.sleep(0.5)
+        time.sleep(2.0)
         info = get_ticker_info(ticker)
         sector = info.get('sector')
         sector = "N/A" if sector is None else sector
@@ -133,7 +133,7 @@ def get_news(ticker_list, article_amnt):
     # Go through each ticker in a list and find news for each ticker
     for ticker in ticker_list:
         try:
-            time.sleep(0.5)
+            time.sleep(2.0)
             stock = yf.Ticker(ticker)
             news = stock.news[:article_amnt]
 

@@ -16,7 +16,8 @@ layout = dbc.Container([
             html.Label("Select Ticker"),
             dcc.Dropdown(ticker_df["Symbol"], 
                          id='ana-ticker-input', 
-                         value='AAPL',
+                         value=None,
+                         placeholder='Select a ticker...',
                          multi=False, 
                          style={'backgroundColor': "#28346E", 'color': 'white'},),], width=4),
         dbc.Col([
