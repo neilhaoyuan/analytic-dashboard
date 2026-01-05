@@ -30,14 +30,24 @@ layout = dbc.Container([
                         id='ana-interval-select-dropdown', value='5 Minutes', multi=False)], width=4)
     ], className='mb-3'),
 
-    dbc.Row([dcc.Graph(id='vwap-graph', style={'height': '75vh'})]),
+    dbc.Spinner([
+        html.Div(id="analytic-content", className="p-4"),
+        ],delay_show=100),
+], fluid=True)
 
-    dbc.Row([dcc.Graph(id='volume-profile', style={'height': '75vh'})]),
-
-    dbc.Row([dcc.Graph(id='rolling-vol', style={'height': '50vh'})]),
-
-    dbc.Row([dcc.Graph(id='rolling-beta', style={'height': '50vh'})]),
-])
+@callback(
+    Output("analytic-content", "children"),
+    Input("ana-ticker-input", "value"),
+    Input("ana-period-select-dropdown", "value"),
+    Input("ana-interval-select-dropdown", "value"),
+)
+def render_page(ticker, period, interval):
+    return [
+        dbc.Row(dcc.Graph(id="vwap-graph", style={"height": "75vh"})),
+        dbc.Row(dcc.Graph(id="volume-profile", style={"height": "75vh"})),
+        dbc.Row(dcc.Graph(id="rolling-vol", style={"height": "50vh"})),
+        dbc.Row(dcc.Graph(id="rolling-beta", style={"height": "50vh"})),
+    ]
 
 @callback(
     Output('vwap-graph', 'figure'),
@@ -138,7 +148,11 @@ def update_graphs(ticker, period, interval):
         paper_bgcolor='rgba(0, 0, 0, 0)',
         plot_bgcolor='#1e1e1e',
         font={'color': 'white'},
-        legend={'x': 0.8, 'y': 0.98, 'xanchor': 'left', 'yanchor': 'top', 'bgcolor': 'rgba(0,0,0,0.5)'}
+        legend={'x': 0.8, 
+                'y': 0.98, 
+                'xanchor': 'left', 
+                'yanchor': 'top', 
+                'bgcolor': 'rgba(0,0,0,0.5)'},
     )
 
     """
