@@ -15,7 +15,10 @@ Data fetching functions
 # Gets Open, High, Low, Close and Volume data for a single ticker
 @cache.memoize(timeout=900)
 def get_ohlc_data(ticker, period, interval):
-    time.sleep(0.3)
+    time.sleep(0.5)
+    if not ticker or period is None or interval is None:
+        return pd.DataFrame()
+    
     df = yf.Ticker(ticker).history(
         period=period_map[period],
         interval=interval_map[interval]
@@ -41,6 +44,13 @@ def get_close_data(ticker_list, period, interval):
     df = pd.DataFrame(closes).dropna()
 
     return df
+
+# Gets ticker info
+@cache.memoize(timeout=3600)
+def get_ticker_info(ticker):
+    if not ticker:
+        return {}
+    return yf.Ticker(ticker).info
 
 # Used for std, cor, etc, gets weekly close prices 
 def get_weekly_close(close_df):
@@ -90,8 +100,9 @@ def get_sector_info(ticker_list):
     sector_data = []
     
     for ticker in ticker_list:
-        time.sleep(0.3)
-        sector = yf.Ticker(ticker).info.get('sector')
+        time.sleep(0.5)
+        info = get_ticker_info(ticker)
+        sector = info.get('sector')
         sector = "N/A" if sector is None else sector
         sector_data.append({
                     'Ticker': ticker,
@@ -112,7 +123,7 @@ def get_news(ticker_list, article_amnt):
     # Go through each ticker in a list and find news for each ticker
     for ticker in ticker_list:
         try:
-            time.sleep(0.3)
+            time.sleep(0.5)
             stock = yf.Ticker(ticker)
             news = stock.news[:article_amnt]
 
@@ -202,7 +213,8 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
             value = current_price * num_shares
             total_value += value
 
-            sector = yf.Ticker(ticker).info.get('sector')
+            info = get_ticker_info(ticker)
+            sector = info.get('sector')
             sector = "N/A" if sector is None else sector
 
             summary_table.append({
