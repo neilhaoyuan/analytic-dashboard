@@ -19,6 +19,9 @@ layout = dbc.Container([
                         value='1 Year', 
                         placeholder='Select a time period...',
                         multi=False, 
+                        clearable=False,
+                        persistence=True,
+                        persistence_type='session',
                         style={'color': 'black'})], width=6),
 
         dbc.Col([
@@ -28,6 +31,9 @@ layout = dbc.Container([
                         id='market-interval-select-dropdown', 
                         value=None, 
                         placeholder='Select an interval...',
+                        clearable=False,
+                        persistence=True,
+                        persistence_type='session',
                         multi=False, 
                         style={'color': 'black'})], width=6)
     ], className='mb-4'),

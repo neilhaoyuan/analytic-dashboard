@@ -20,18 +20,10 @@ def get_ohlc_data(ticker, period, interval):
     if ticker is None or period is None or interval is None:
         return pd.DataFrame()
     
-    print(f"Fetching: {ticker}, period={period}, interval={interval}")
-    print(f"Mapped: period={period_map[period]}, interval={interval_map[interval]}")
-
     df = yf.Ticker(ticker).history(
         period=period_map[period],
         interval=interval_map[interval]
     )
-
-    if not df.empty:
-        print(f"Date range: {df.index.min()} to {df.index.max()}")  # ADD THIS
-    else:
-        print("Empty dataframe returned!")
 
     return df
 
@@ -106,18 +98,19 @@ def get_volume_data(ticker, period, interval):
 def get_sector_info(ticker_list):
     if not ticker_list:
         return pd.DataFrame()
-    
-    sector_data = []
-    
+
+    sector_data = []    
     for ticker in ticker_list:
         time.sleep(2.0)
         info = get_ticker_info(ticker)
         sector = info.get('sector')
-        sector = "N/A" if sector is None else sector
-        sector_data.append({
-                    'Ticker': ticker,
-                    'Sector': sector})
-    
+        
+        # Only add if sector exists
+        if sector is not None:
+            sector_data.append({
+                'Ticker': ticker,
+                'Sector': sector
+            })
     df = pd.DataFrame(sector_data)
     
     return df
@@ -276,6 +269,7 @@ def get_summary_table(ticker_list, shares_dict, period, interval, port_page):
 
     return df
 
+# Function that removes any time gaps in a graph, mainly used for candlesticks
 def remove_market_gaps(fig):
     fig.update_xaxes(rangebreaks=[
         dict(bounds=["sat", "mon"]),

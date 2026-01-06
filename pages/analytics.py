@@ -14,21 +14,36 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.Label("Select Ticker"),
-            dcc.Dropdown(ticker_df["Symbol"], 
-                         id='ana-ticker-input', 
-                         value=None,
-                         placeholder='Select a ticker...',
-                         multi=False, 
-                         style={'backgroundColor': "#28346E", 'color': 'white'},),], width=4),
+            dcc.Dropdown(
+                        ticker_df["Symbol"], 
+                        id='ana-ticker-input', 
+                        value=None,
+                        placeholder='Select a ticker...',
+                        multi=False,
+                        persistence=True,
+                        persistence_type='session',
+                        style={'backgroundColor': "#28346E", 'color': 'white'})], width=4),
         dbc.Col([
             html.Label("Select Period"),
             dcc.Dropdown(['1 Month', '5 Days', '1 Day'],
-                        id='ana-period-select-dropdown', value='1 Month', multi=False)], width=4),
+                        id='ana-period-select-dropdown', 
+                        value='1 Month', 
+                        placeholder='Select a time period...',
+                        multi=False,
+                        clearable=False,
+                        persistence=True,
+                        persistence_type='session',)], width=4),
 
         dbc.Col([
             html.Label("Select Interval"),
             dcc.Dropdown(['5 Minutes', '15 Minutes', '30 Minutes', '1 Hour'],
-                        id='ana-interval-select-dropdown', value='5 Minutes', multi=False)], width=4)
+                        id='ana-interval-select-dropdown', 
+                        value='1 Hour', 
+                        placeholder='Select an interval...', 
+                        multi=False,
+                        clearable=False,
+                        persistence=True,
+                        persistence_type='session',)], width=4)
     ], className='mb-3'),
 
     dbc.Spinner([
@@ -43,12 +58,13 @@ layout = dbc.Container([
     Input("ana-interval-select-dropdown", "value"),
 )
 def render_page(ticker, period, interval):
-    return [
-        dbc.Row(dcc.Graph(id="vwap-graph", style={"height": "75vh"})),
-        dbc.Row(dcc.Graph(id="volume-profile", style={"height": "75vh"})),
-        dbc.Row(dcc.Graph(id="rolling-vol", style={"height": "50vh"})),
-        dbc.Row(dcc.Graph(id="rolling-beta", style={"height": "50vh"})),
-    ]
+    if ticker: 
+        return [
+            dbc.Row(dcc.Graph(id="vwap-graph", style={"height": "75vh"})),
+            dbc.Row(dcc.Graph(id="volume-profile", style={"height": "75vh"})),
+            dbc.Row(dcc.Graph(id="rolling-vol", style={"height": "50vh"})),
+            dbc.Row(dcc.Graph(id="rolling-beta", style={"height": "50vh"})),
+        ]
 
 @callback(
     Output('vwap-graph', 'figure'),
