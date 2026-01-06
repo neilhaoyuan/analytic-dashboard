@@ -225,7 +225,6 @@ def update_index_graphs(period, interval):
         Output('sector-table', 'children'),
         Input('sector-period-select-dropdown', 'value'),
         Input('sector-interval-select-dropdown', 'value'),
-        prevent_initial_call=True
 )
 # Callback that updates the sector summary table using data from the user-selected period and intervals
 def update_sector_summary(period, interval):

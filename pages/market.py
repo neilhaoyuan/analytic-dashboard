@@ -47,7 +47,8 @@ layout = dbc.Container([
     # A horizontally scrollable element that shows news content
     dbc.Spinner([
         html.Div(id="market-content", className="p-4"),
-        ],delay_show=100),
+        ],
+        delay_show=100),
 ], fluid=True)
 
 @callback(
@@ -181,7 +182,6 @@ def update_market_graphs(period, interval):
         Output('market-table', 'children'),
         Input('market-period-select-dropdown', 'value'),
         Input('market-interval-select-dropdown', 'value'),
-        prevent_initial_call=True
 )
 # Callback that updates the market summary table using data from the user-selected period and intervals
 def update_sector_summary(period, interval):
