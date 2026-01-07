@@ -250,7 +250,6 @@ def update_sector_summary(period, interval):
         Output('market-news-cards', 'children'),
         Input('market-period-select-dropdown', 'value'),
         Input('market-interval-select-dropdown', 'value'),
-        prevent_initial_call=True
 )
 # Callback that builds the news cards of all the market indices 
 def update_market_news_cards(period, interval):    

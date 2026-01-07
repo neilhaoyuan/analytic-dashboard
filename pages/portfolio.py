@@ -409,7 +409,6 @@ def update_sector_graph(ticker_list):
         Input('shares-table', 'data'),
         Input('period-select-dropdown', 'value'),
         Input('interval-select-dropdown', 'value'),
-        prevent_initial_call=True
 )
 # Callback that updates the portfolio summary table using data from the user-selected period and intervals
 def update_summary_table(ticker_list, table_data, period, interval):
@@ -484,7 +483,6 @@ def update_summary_table(ticker_list, table_data, period, interval):
 @callback(
         Output('news-cards', 'children'),
         Input('ticker-input', 'value'),
-        prevent_initial_call=True
 )
 # Callback that builds the news cards of all the portfolio tickers
 def update_news_cards(ticker_list):
