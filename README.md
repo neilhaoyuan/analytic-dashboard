@@ -43,8 +43,7 @@ A real-time stock market analytics dashboard built with Dash, Flask, Plotly, yFi
 - Scrollable data tables with conditional formatting
 - Daily updating news pertaining to related stocks/indices/sectors
 
-![Dashboard Demo](assets/dashboard-updated.gif)
-
+![Dashboard Demo](assets/dashboard_updated.gif)
 
 ## Usage Instructions
 1. Clone the repository
