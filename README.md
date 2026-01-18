@@ -2,7 +2,8 @@
 
 A Data Visualization project with Dash. 
 
-<img width="959" height="599" alt="Image" src="https://github.com/user-attachments/assets/f667bb9b-d0e2-4283-8a27-04b4c12e08d2" />
+<img width="959" height="485" alt="image" src="https://github.com/user-attachments/assets/442cda49-d587-4ecd-a108-de6297b4c576" />
+
 
 ## Description
 
