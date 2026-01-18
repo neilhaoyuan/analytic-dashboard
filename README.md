@@ -1,16 +1,23 @@
 # Analytic Dashboard
 
-A Data Visualization project with Dash. 
+A Data Visualization project with Dash and Flask.
 
-<img width="959" height="599" alt="Image" src="https://github.com/user-attachments/assets/f667bb9b-d0e2-4283-8a27-04b4c12e08d2" />
+<img width="959" height="485" alt="image" src="https://github.com/user-attachments/assets/442cda49-d587-4ecd-a108-de6297b4c576" />
+
 
 ## Description
 
 ![Dashboard Demo](assets/analytic-dashboard-test.gif)
 
-A real-time stock market analytics dashboard built with Dash, Plotly, yFinance, and Pandas. Features portfolio tracking, broad market indices analysis, and sector performance visualization. Allows for dynamic user selection of trading period and intervals, and displays quick and readable summary metrics and related news stories.
+A real-time stock market analytics dashboard built with Dash, Flask, Plotly, yFinance, and Pandas. Features technical analysis (VWAP mean-reversion, volume profile), portfolio tracking, broad market indices analysis, and sector performance visualization. Allows for dynamic user selection of trading period and intervals, and displays quick and readable summary metrics and related news stories.
 
-### Portfolio & Stock Analysis
+### Technical Stock Analysis
+- Analyze individual stocks for various technical indicators
+- Tracks Volume Weighted Average Price (VWAP) and detects VWAP Snapback events: when price extends beyond VWAP by 2 standard deviations and then crosses back to VWAP
+- Volume Profile with point of control and resistance/support bands visualization
+- Rolling Realized Volatility and Rolling Beta charts 
+
+### Portfolio Analysis
 - Track multiple stocks in your personal portfolio
 - Real-time portfolio value and performance metrics
 - Individual stock performance visualization
@@ -38,8 +45,6 @@ A real-time stock market analytics dashboard built with Dash, Plotly, yFinance, 
 - Scrollable data tables with conditional formatting
 - Daily updating news pertaining to related stocks/indices/sectors
 
-<img width="959" height="599" alt="Image" src="https://github.com/user-attachments/assets/d800c4d5-bc54-4d5c-ad0c-761f96ba7626" />
-
 ## Usage Instructions
 1. Clone the repository
 ````bash
@@ -57,17 +62,8 @@ python index.py
 4. Open your browser and navigate to the localhost server
 5. Use the dashboard
 
-## Configuration
-**Time Periods**  
-Available periods: 1 Day, 5 Days, 1 Month, 3 Months, 6 Months, Year To Date, 1 Year, 2 Years, 5 Years, 10 Years
-
-**Intervals**  
-Available intervals vary by period:
-- Intraday: 5 Minutes, 15 Minutes, 30 Minutes, 1 Hour, 1.5 Hours
-- Daily and longer: 1 Day, 5 Days, 1 Week, 1 Month, 3 Months
-
 **Data Sources**  
-This dashboard uses yfinance to fetch real-time stock market data from Yahoo Finance, due to that it can not be deployed. 
+This dashboard uses yfinance to fetch real-time stock market data from Yahoo Finance. 
 
 The list of available trackable tickers in the Portfolio dropdown menu come from scraping the NASDAQ and TSX. Check out stocks.py for more details. 
 
