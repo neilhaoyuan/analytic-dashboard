@@ -1,6 +1,6 @@
 # Analytic Dashboard
 
-A Data Visualization project with Dash. 
+A Data Visualization project with Dash and Flask.
 
 <img width="959" height="485" alt="image" src="https://github.com/user-attachments/assets/442cda49-d587-4ecd-a108-de6297b4c576" />
 
@@ -9,7 +9,7 @@ A Data Visualization project with Dash.
 
 ![Dashboard Demo](assets/analytic-dashboard-test.gif)
 
-A real-time stock market analytics dashboard built with Dash, Plotly, yFinance, and Pandas. Features technical analysis (VWAP mean-reversion, volume profile), portfolio tracking, broad market indices analysis, and sector performance visualization. Allows for dynamic user selection of trading period and intervals, and displays quick and readable summary metrics and related news stories.
+A real-time stock market analytics dashboard built with Dash, Flask, Plotly, yFinance, and Pandas. Features technical analysis (VWAP mean-reversion, volume profile), portfolio tracking, broad market indices analysis, and sector performance visualization. Allows for dynamic user selection of trading period and intervals, and displays quick and readable summary metrics and related news stories.
 
 ### Technical Stock Analysis
 - Analyze individual stocks for various technical indicators
